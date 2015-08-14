@@ -58,6 +58,11 @@ public class AdvectedScalesSettings : MonoBehaviour
 	public bool doAdvection = true;
 	[Tooltip("How many FPI iterations to perform while advecting")]
 	public int advectionIters = 3;
+
+	// forward pinning moves samples inwards or outwards from the camera. for an orthognal projection this would be fine and
+	// would just work. for a perspective projection the samples move not only along view z but also along view x. also
+	// the speed that the sample moves depends on the ray scale which varies across the screen. luckily, the advection
+	// code is able to account for all of this trivially - find usages of this variable to see the details.
 	[Tooltip("When advecting, take into account sample motion due to forward pinning")]
 	public bool advectionCompensatesForwardPin = true;
 

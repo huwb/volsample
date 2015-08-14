@@ -38,9 +38,12 @@ Shader "Custom/Clouds" {
 	
 	#include "UnityCG.cginc"
 	
+	// the number of volume samples to take
 	#define SAMPLE_COUNT 32
+	// use this to turn adaptive sampling on/off
+	#define ADAPTIVE_SAMPLING
+	// sun direction
 	#define SUN_DIR float3(-0.70710678,0.,-.70710678)
-	//#define ADAPTIVE_SAMPLING
 	
 	struct v2fd {
 		float4 pos : SV_POSITION;
