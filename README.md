@@ -6,7 +6,7 @@ Research on sampling methods for real-time volume rendering
 
 ## Intro
 
-This is the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, available for download [here][ADVANCES2015].
+This is the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015. The full presentation PPT is available for download from the course page [here][ADVANCES2015] - this is the best place to start for an introduction to this project.
 
 This research introduces three main volume sampling techniques which are described below - Forward Pinning, General Pinning and Adaptive Sampling.
 

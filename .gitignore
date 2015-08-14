@@ -2,3 +2,4 @@ src/unity/Library
 src/unity/Temp
 src/unity/*.csproj
 src/unity/*.sln
+src/unity/*.userprefs
