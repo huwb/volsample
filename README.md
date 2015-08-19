@@ -7,7 +7,7 @@ Research on sampling methods for real-time volume rendering
 
 ## Intro
 
-This is the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015. The full presentation PPT is available for download from the course page [here][ADVANCES2015] - this is the best place to start for an introduction to this project.
+This is the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015 [1]. The full presentation PPT is available for download from the course page [here][ADVANCES2015] - this is the best place to start for an introduction to this project.
 
 This research introduces three main volume sampling techniques which are described below - Forward Pinning, General Pinning and Adaptive Sampling.
 
@@ -37,7 +37,7 @@ This is then passed into the clouds shader in *CloudsRayScales.cs*, which then s
 
 The core of this is an advection process used to keep sample slices stationary. The two sample slices are drawn in the Editor view if `AdvectedScalesSettings.debugDrawAdvection` is true, so you can verify that they are stationary. These debug draws do not use Forward Pinning, so they will only appear stationary if you rotate and strafe the camera only.
 
-The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point. We use Fixed Point Iteration (FPI) to invert this - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale.
+The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point. We use Fixed Point Iteration (FPI) to invert this - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale. See [2] for more information about FPI applied to related problems.
 
 Special handling is required for new scales (i.e. to extend the sample slice at the sides when the frustum moves). Ideally the sample slice would be extended along the motion path of the point at the right of the frustum. If this extension could be provided to FPI then FPI would probably yield the full, final solution. However I'm not sure if this is possible. Instead we detect if the iteration has landed off the slice and then manually extend the slice. This is done as a linear approximation to the extension - i.e. 1 line segment. If you e.g. spin the camera very fast you will see that the slice is extended using line segments. However for normal motion it is not visible and it seems to be pretty stable so this is probably good enough for our needs.
 
@@ -69,3 +69,14 @@ There are many directions for improving this work
 * The render generally breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
 
 [ADVANCES2015]: http://advances.realtimerendering.com/s2015/index.html "Advances in Real-Time Rendering - SIGGRAPH 2015"
+
+
+## References
+
+[1] Bowles H. and Zimmermann D., *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, Advances in Real-Time Rendering in Games, SIGGRAPH 2015. [Project page][ADVANCES2015].
+
+[2] Bowles H., Mitchell K., Sumner R., Moore J., Gross M., *Iterative Image Warping*, EUROGRAPHICS 2012. [Project page](https://graphics.ethz.ch/publications/papers/paperBow12.php).
+
+[3] ShaderToy: Volume renderer with forward pinning and adaptive sampling: [Sample Pinning](https://www.shadertoy.com/view/XdfXzn)
+
+[4] ShaderToy: Illustration of adaptive sampling: [Adaptive Sampling Diagram](https://www.shadertoy.com/view/llXSD7)
