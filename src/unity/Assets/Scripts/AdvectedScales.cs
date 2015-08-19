@@ -53,7 +53,7 @@ public class AdvectedScales : MonoBehaviour
 		// init scales to something interesting
 		for( int i = 0; i < settings.scaleCount; i++ )
 		{
-			float fixedZ = Mathf.Lerp( Mathf.Sin(CloudsBase.halfFov_rad), 1.0f, settings.fixedZProp ) / Mathf.Sin(getTheta(i));
+			float fixedZ = Mathf.Lerp( Mathf.Cos(CloudsBase.halfFov_rad), 1.0f, settings.fixedZProp ) / Mathf.Sin(getTheta(i));
 			float fixedR = (Mathf.Sin(8.0f*i/(float)settings.scaleCount)*settings.fixedRNoise + 1.0f);
 			scales_norm[i] = Mathf.Lerp( fixedZ, fixedR, settings.reInitCurvature );
 		}
