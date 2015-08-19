@@ -110,17 +110,16 @@ public class AdvectedScales : MonoBehaviour
 
 				// is the lookup is inside the frustum? if so, sample it to advect. if not, introducing new samples
 				// needs special treatment and is handled below
-				if( thetaWithinView(theta0) )
-					oneIn = true;
-				{
-					scales_new_norm[i] = r1 / radius;
-				}
+				oneIn = oneIn || thetaWithinView(theta0);
+
+				scales_new_norm[i] = r1 / radius;
 			}
 
 			// look for values that need to be introduced
-			// todo right now this assumes that not all samples are new (some were advected). need to detect if all samples are new and then just init with a flat line?
 			if( oneIn )
+			{
 				populateNewScales( scales_new_norm, theta0s, dt );
+			}
 			else
 			{
 				ClearAfterTeleport();
@@ -164,55 +163,36 @@ public class AdvectedScales : MonoBehaviour
 	// slice. we don't just pass in a value like 1 as this will produce a sharp dicontinuity.
 	// below we compute the last point along the sample slice (pos0), and then compute a new point to linearly
 	// extrapolate towards based on the same last radius (pos1), so we extend the sample slice with a line segment.
+	// note that none of this would be required if we could extend sampleR beyond the frustum with the correct extension
+	// of the sample slice. then the FPI would just find the correct solution and it would just work. however i dont know
+	// if this extension can be computed easily??
 	void populateNewScales( float[] scales_new_norm, float[] theta0s, float dt )
 	{
-		if( !thetaWithinView(theta0s[0]) )
+		if( !thetaWithinView(theta0s[0]) || !thetaWithinView(theta0s[settings.scaleCount-1]) )
 		{
 			int count = 1;
-			for( int i = 1; i < settings.scaleCount && !thetaWithinView(theta0s[i]); i++ )
+
+			// determine which side we're filling it. calling it right side as angles increase anti-clockwise
+			bool rightSide = !thetaWithinView(theta0s[0]);
+
+			int lastIndex = rightSide ? 0 : settings.scaleCount-1;
+			
+			// count how many scales we have to fill in
+			for( int i = 1; i < settings.scaleCount && !thetaWithinView(theta0s[ rightSide ? lastIndex+i : lastIndex-i ]); i++ )
 			{
 				count++;
 			}
 			
-			float the = getTheta(0);
+			float the = getTheta(lastIndex);
 			
 			// interpolate from R at edge, to ideal R, so that R values smoothly return to a good place
 			float r = Mathf.Lerp( sampleR(the), radius, motionMeasure*settings.alphaStrafe*dt );
 			
 			Vector3 pos0 = transform.position + transform.forward * r * Mathf.Sin(the) + transform.right * r * Mathf.Cos(the);
 			
-			float r1 = radius * scales_new_norm[count];
-			float theta1 = getTheta(count);
-			
-			Vector3 pos1 = transform.position
-				+ r1 * Mathf.Cos(theta1) * transform.right
-				+ r1 * Mathf.Sin(theta1) * transform.forward;
-			
-			// radii interpolate from pos0 to pos1
-			for( int i = 0; i < count; i++ )
-			{
-				float alpha = count > 1 ? (float)i/(float)(count-1) : 0.0f;
-				Vector3 pos = Vector3.Lerp( pos0, pos1, alpha );
-				scales_new_norm[i] = (pos-transform.position).magnitude / radius;
-			}
-		}
-		else if( !thetaWithinView(theta0s[settings.scaleCount-1]) )
-		{
-			int count = 1;
-			for( int i = 1; i < settings.scaleCount && !thetaWithinView(theta0s[settings.scaleCount-1-i]); i++ )
-			{
-				count++;
-			}
-			
-			float the = getTheta(settings.scaleCount-1);
-			
-			// interpolate from R at edge, to ideal R, so that R values smoothly return to a good place
-			float r = Mathf.Lerp( sampleR(the), radius, motionMeasure*settings.alphaStrafe*dt );
-			
-			Vector3 pos0 = transform.position + transform.forward * r * Mathf.Sin(the) + transform.right * r * Mathf.Cos(the);
-			
-			float r1 = radius * scales_new_norm[settings.scaleCount - 1 - count];
-			float theta1 = getTheta(settings.scaleCount - 1 - count);
+			int ind = rightSide ? count : (settings.scaleCount - 1 - count);
+			float r1 = radius * scales_new_norm[ind];
+			float theta1 = getTheta( ind );
 			
 			Vector3 pos1 = transform.position
 				+ r1 * Mathf.Cos(theta1) * transform.right
@@ -222,9 +202,9 @@ public class AdvectedScales : MonoBehaviour
 			for( int i = 0; i < count; i++ )
 			{
 				float alpha = count > 1 ? (float)i/(float)(count-1) : 0.0f;
-				//float alpha = (float)i/(float)(count-1);
 				Vector3 pos = Vector3.Lerp( pos0, pos1, alpha );
-				scales_new_norm[settings.scaleCount-1-i] = (pos-transform.position).magnitude / radius;
+				ind = rightSide ? i : (settings.scaleCount-1-i);
+				scales_new_norm[ind] = (pos-transform.position).magnitude / radius;
 			}
 		}
 	}
@@ -324,6 +304,10 @@ public class AdvectedScales : MonoBehaviour
 	//
 	public float sampleR( float theta )
 	{
+		return sampleR_CONST_EXTENSION( theta );
+	}
+	public float sampleR_CONST_EXTENSION( float theta )
+	{
 		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
 		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
 		s = Mathf.Clamp01(s);
@@ -336,6 +320,37 @@ public class AdvectedScales : MonoBehaviour
 
 		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
 
+		return result;
+	}
+	public float sampleR_GRAD_EXTENSION( float theta )
+	{
+		if( theta < Mathf.PI/2.0f - CloudsBase.halfFov_rad )
+		{
+			float dTheta = 2.0f * CloudsBase.halfFov_rad / (float)(settings.scaleCount-1);
+			float dScale = scales_norm[0] - scales_norm[1];
+			float result_norm = scales_norm[0] + ((Mathf.PI/2.0f - CloudsBase.halfFov_rad)-theta) * dScale/dTheta;
+			return result_norm * radius;
+		}
+		if( theta > Mathf.PI/2.0f + CloudsBase.halfFov_rad )
+		{
+			float dTheta = 2.0f * CloudsBase.halfFov_rad / (float)(settings.scaleCount-1);
+			float dScale = scales_norm[settings.scaleCount-1] - scales_norm[settings.scaleCount-2];
+			float result_norm = scales_norm[settings.scaleCount-1] + (theta - (Mathf.PI/2.0f + CloudsBase.halfFov_rad)) * dScale/dTheta;
+			return result_norm * radius;
+		}
+
+		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
+		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
+		s = Mathf.Clamp01(s);
+		
+		// get from 0 to rCount-1
+		s *= (float)(settings.scaleCount-1);
+		
+		int i0 = Mathf.FloorToInt(s);
+		int i1 = Mathf.CeilToInt(s);
+		
+		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
+		
 		return result;
 	}
 
@@ -424,7 +439,10 @@ public class AdvectedScales : MonoBehaviour
 		{
 			float prevTheta = getTheta(i-1);
 			float thisTheta = getTheta(i);
-			
+
+			prevTheta = Mathf.PI/2.0f + (prevTheta-Mathf.PI/2.0f) * 1.2f;
+			thisTheta = Mathf.PI/2.0f + (thisTheta-Mathf.PI/2.0f) * 1.2f;
+
 			q = Quaternion.AngleAxis( prevTheta * Mathf.Rad2Deg, -Vector3.up );
 			Vector3 prevRd = q * transform.right;
 			
@@ -432,17 +450,24 @@ public class AdvectedScales : MonoBehaviour
 			Vector3 thisRd = q * transform.right;
 			
 			float scale = settings.debugDrawScale * 1.0f;
-			
-			float meas = radius*scales_norm[i]*Mathf.Sin(getTheta(i)) - radius*scales_norm[i-1]*Mathf.Sin(getTheta(i-1)); //) / rValue;
-			float dx = Mathf.Cos(getTheta(i))*radius*scales_norm[i] - Mathf.Cos(getTheta(i-1))*radius*scales_norm[i-1];
+
+			float scalePrev = sampleR( prevTheta );
+			float scaleThis = sampleR( thisTheta );
+
+			float meas = scaleThis*Mathf.Sin(thisTheta) - scalePrev*Mathf.Sin(prevTheta);
+
+			float dx = Mathf.Cos(thisTheta)*scaleThis - Mathf.Cos(prevTheta)*scalePrev;
 			meas /= dx;
 			meas *= 5.0f;
 			
 			Color newCol = Color.white * Mathf.Abs(meas);
 			newCol.a = 1; newCol.b = 0;
 			newCol = Color.white;
-			
-			Debug.DrawLine( transform.position + prevRd * (radius*scales_norm[i-1] /*-integrateForward*/) * scale, transform.position + thisRd * (radius*scales_norm[i] /*-integrateForward*/) * scale, newCol );
+
+			if( !thetaWithinView(thisTheta) || !thetaWithinView(prevTheta) )
+				newCol *= 0.5f;
+
+			Debug.DrawLine( transform.position + prevRd * (scalePrev /*-integrateForward*/) * scale, transform.position + thisRd * (scaleThis /*-integrateForward*/) * scale, newCol );
 			
 			if( settings.debugDrawAdvectionGuides )
 			{
