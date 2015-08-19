@@ -3,7 +3,7 @@
 
 Research on sampling methods for real-time volume rendering
 
-![Teaser](huwb.github.com/volsample/img/teaser.jpg)
+![Teaser](https://github.com/github/volsample/blob/master/img/teaser.jpg)
 
 ## Intro
 
