@@ -76,8 +76,8 @@ public class AdvectedScalesSettings : MonoBehaviour
 	[Tooltip("Gain control for gradient relaxation")]
 	public float alphaGradient = 0.3f;
 
-	[Tooltip("How fast newly introduced scales return to desired scale when camera is strafed")]
-	public float alphaStrafe = 1.0f;
+	[Tooltip("How fast newly introduced scales return to desired scale")]
+	public float alphaScaleReturn = 4.0f;
 
 	[Tooltip("Ramp up/down gradient relaxation when camera is stationary")]
 	public bool useMotionMeas = true;

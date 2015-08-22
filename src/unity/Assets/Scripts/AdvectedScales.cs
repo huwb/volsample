@@ -186,7 +186,9 @@ public class AdvectedScales : MonoBehaviour
 			float theta_edge = getTheta(lastIndex);
 			
 			// interpolate from R at edge, to ideal R, so that R values smoothly return to a good place
-			float r = Mathf.Lerp( sampleR(theta_edge), radius, motionMeasure*settings.alphaStrafe*dt );
+			float angleSubtended = 2.0f * CloudsBase.halfFov_rad * (float)count/(float)settings.scaleCount;
+			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*dt*angleSubtended );
+			float r = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
 			
 			Vector3 pos_extrapolated = transform.position + transform.forward * r * Mathf.Sin(theta_edge) + transform.right * r * Mathf.Cos(theta_edge);
 			
