@@ -147,16 +147,43 @@ public class AdvectedScales : MonoBehaviour
 
 
 			// all done - store the new r values
-			for( int i = 0; i < settings.scaleCount; i++ )
+			if( !settings.debugFreezeAdvection )
 			{
-				scales_norm[i] = scales_new_norm[i];
+				// normal path - store the scales then debug draw
+
+				for( int i = 0; i < settings.scaleCount; i++ )
+				{
+					scales_norm[i] = scales_new_norm[i];
+				}
+
+				Draw();
+			}
+			else
+			{
+				// for freezing advection, apply the scales temporarily and draw them, but then revert them
+
+				float[] bkp = new float[scales_norm.Length];
+				for( int i = 0; i < bkp.Length; i++ )
+					bkp[i] = scales_norm[i];
+
+				for( int i = 0; i < settings.scaleCount; i++ )
+					scales_norm[i] = scales_new_norm[i];
+
+				Draw();
+
+				for( int i = 0; i < settings.scaleCount; i++ )
+					scales_norm[i] = bkp[i];
 			}
 		}
 
-		lastPos = transform.position;
-		lastForward = transform.forward;
-		lastRight = transform.right;
+		if( !settings.debugFreezeAdvection )
+		{
+			lastPos = transform.position;
+			lastForward = transform.forward;
+			lastRight = transform.right;
+		}
 	}
+
 
 	// add scales at the sides of the frustum. this is an ugly bit of the code and can hopefully be simplified.
 	// the problem is that we need to introduce a bunch of scales at one side of the frustum to extend the sample
@@ -277,12 +304,6 @@ public class AdvectedScales : MonoBehaviour
 		lastRight = transform.right;
 	}
 
-	void LateUpdate()
-	{
-		if( settings.debugDrawAdvection )
-			Draw();
-	}
-
 	public Vector3 View( float theta ) { float r = sampleR(theta); return r*Mathf.Cos(theta)*Vector3.right + r*Mathf.Sin(theta)*Vector3.forward; }
 	public float getTheta( int i ) { return 2.0f * CloudsBase.halfFov_rad * (float)i/(float)(settings.scaleCount-1) - CloudsBase.halfFov_rad + Mathf.PI/2.0f; }
 	bool thetaWithinView( float theta ) { return Mathf.Abs( theta - Mathf.PI/2.0f ) <= CloudsBase.halfFov_rad; }
@@ -395,7 +416,6 @@ public class AdvectedScales : MonoBehaviour
 	{
 		Vector3 pos0 = ComputePos0_world( theta0 );
 		
-		
 		// end position, removing foward motion of cam, in local space
 		Vector3 pos1_local = transform.InverseTransformPoint( pos0 );
 		
@@ -415,7 +435,6 @@ public class AdvectedScales : MonoBehaviour
 	float ComputeR1( float theta0 )
 	{
 		Vector3 pos0 = ComputePos0_world( theta0 );
-		
 		
 		// end position, removing forward motion of cam
 		Vector3 pos1 = transform.position;

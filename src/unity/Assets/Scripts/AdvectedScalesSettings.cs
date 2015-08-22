@@ -32,6 +32,8 @@ public class AdvectedScalesSettings : MonoBehaviour
 	public bool debugDrawAdvection = true;
 	[Tooltip("A useful reference showing fixed Z and fixed R layouts")]
 	public bool debugDrawAdvectionGuides = true;
+	[Tooltip("Computes advection but doesn't apply it. Useful for debugging.")]
+	public bool debugFreezeAdvection = false;
 
 	[HideInInspector]
 	public float debugDrawScale = 1;
@@ -57,6 +59,7 @@ public class AdvectedScalesSettings : MonoBehaviour
 	[Tooltip("Do advection process")]
 	public bool doAdvection = true;
 	[Tooltip("How many FPI iterations to perform while advecting")]
+	[Range(0,15)]
 	public int advectionIters = 3;
 
 	// forward pinning moves samples inwards or outwards from the camera. for an orthognal projection this would be fine and
