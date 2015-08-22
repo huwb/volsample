@@ -183,26 +183,26 @@ public class AdvectedScales : MonoBehaviour
 				count++;
 			}
 			
-			float the = getTheta(lastIndex);
+			float theta_edge = getTheta(lastIndex);
 			
 			// interpolate from R at edge, to ideal R, so that R values smoothly return to a good place
-			float r = Mathf.Lerp( sampleR(the), radius, motionMeasure*settings.alphaStrafe*dt );
+			float r = Mathf.Lerp( sampleR(theta_edge), radius, motionMeasure*settings.alphaStrafe*dt );
 			
-			Vector3 pos0 = transform.position + transform.forward * r * Mathf.Sin(the) + transform.right * r * Mathf.Cos(the);
+			Vector3 pos_extrapolated = transform.position + transform.forward * r * Mathf.Sin(theta_edge) + transform.right * r * Mathf.Cos(theta_edge);
 			
 			int ind = rightSide ? count : (settings.scaleCount - 1 - count);
 			float r1 = radius * scales_new_norm[ind];
-			float theta1 = getTheta( ind );
+			float theta_slice_end = getTheta( ind );
 			
-			Vector3 pos1 = transform.position
-				+ r1 * Mathf.Cos(theta1) * transform.right
-					+ r1 * Mathf.Sin(theta1) * transform.forward;
+			Vector3 pos_slice_end = transform.position
+				+ r1 * Mathf.Cos(theta_slice_end) * transform.right
+				+ r1 * Mathf.Sin(theta_slice_end) * transform.forward;
 			
-			// radii interpolate from pos0 to pos1
+			// radii interpolate from pos_slice_end to pos_extrapolated
 			for( int i = 0; i < count; i++ )
 			{
 				float alpha = count > 1 ? (float)i/(float)(count-1) : 0.0f;
-				Vector3 pos = Vector3.Lerp( pos0, pos1, alpha );
+				Vector3 pos = Vector3.Lerp( pos_extrapolated, pos_slice_end, alpha );
 				ind = rightSide ? i : (settings.scaleCount-1-i);
 				scales_new_norm[ind] = (pos-transform.position).magnitude / radius;
 			}

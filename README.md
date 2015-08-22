@@ -73,7 +73,7 @@ There are many directions for improving this work
 
 ## References
 
-[1] Bowles H. and Zimmermann D., *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, Advances in Real-Time Rendering in Games, SIGGRAPH 2015. [Project page][ADVANCES2015].
+[1] Bowles H. and Zimmermann D., *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, Advances in Real-Time Rendering in Games course, SIGGRAPH 2015. [Course page][ADVANCES2015].
 
 [2] Bowles H., Mitchell K., Sumner R., Moore J., Gross M., *Iterative Image Warping*, EUROGRAPHICS 2012. [Project page](https://graphics.ethz.ch/publications/papers/paperBow12.php).
 
