@@ -42,7 +42,10 @@ The advection is implemented in *AdvectedScales.cs*. See the inline code comment
 The sample slice is extended as required in an elegant way. Linear extensions are added to the sample slice based on the camera motion, and this extended slice is the one that FPI iterates over.
 This means that the solution from FPI is good to go without any further treatment.
 To see this set `debugFreezeAdvection` to true and then rotate the camera, to see how the slice is extended.
+
 Hopefully this generalises to advection of 2D sample slices, to support full 3D rotations.
+There is a test pushed *AdvectedScales2D.cs* - add this script to the camera to see a proof of concept for the basic advection without the linear extensions (debug drawing only for now).
+The next step is to figure out how to do the extensions in 2D.
 
 It seems Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.
 
@@ -67,7 +70,9 @@ You may run into the following:
 There are many directions for improving this work
 
 * Gradient relaxation is a little complicated at the moment, doing multiple passes in different directions from different starting points. I believe with experimentation this could be simplified. Also, it currently doesn't always work well enough - you can sometimes still see pinching. We may want to define a maximum gradient that is never exceeded (a hard limit instead of the current soft process).
-* Generalisation from flatland 2D to full 3D motions. Ray scales are currently a 1D array of floats, indexed by ray angle on the xz plane. This would have to generalise to a 2D array. The advection procedure should generalise. The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.
+* Generalisation from flatland 2D to full 3D motions.
+  I have implemented a proof of concept for the basic advection (see notes above), but the linear extensions are not figured out yet, so new scales are inappropriate.
+  The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.
 * The ray scale clamping works well most of the time but when transitioning straight from a strafing layout to a rotating layout, some of the ray scales get clamped and is causing some aliasing. I'm not sure if this is a bug or a limitation of the current clamping scheme.
 * The adaptive sampling distances and weights are currently dynamically computed in *Clouds.shader*. It would be more efficient to pass them in to the shader - see notes above.
 * The render generally breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
