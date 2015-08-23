@@ -90,7 +90,6 @@ public class AdvectedScales : MonoBehaviour
 
 		// working data
 		float[] scales_new_norm = new float[settings.scaleCount];
-		float[] theta0s = new float[settings.scaleCount];
 
 
 		////////////////////////////////
@@ -106,21 +105,14 @@ public class AdvectedScales : MonoBehaviour
 				float theta0 = FindTheta0( theta1 );
 				float r1 = ComputeR1( theta0 );
 
-				theta0s[i] = theta0;
-
-				// is the lookup is inside the frustum? if so, sample it to advect. if not, introducing new samples
-				// needs special treatment and is handled below
-				oneIn = oneIn || thetaWithinView(theta0);
-
 				scales_new_norm[i] = r1 / radius;
+
+				// detect case where no samples were taken from the old slice
+				oneIn = oneIn || thetaWithinView(theta0);
 			}
 
-			// look for values that need to be introduced
-			if( oneIn )
-			{
-				populateNewScales( scales_new_norm, theta0s, dt );
-			}
-			else
+			// if no samples taken, call this a teleport, reinit scales
+			if( !oneIn && !settings.debugFreezeAdvection )
 			{
 				ClearAfterTeleport();
 			}
@@ -142,7 +134,7 @@ public class AdvectedScales : MonoBehaviour
 			// limit/relax the gradients
 			if( settings.limitGradient )
 			{
-				RelaxGradients( scales_new_norm, theta0s );
+				RelaxGradients( scales_new_norm );
 			}
 
 
@@ -185,59 +177,6 @@ public class AdvectedScales : MonoBehaviour
 	}
 
 
-	// add scales at the sides of the frustum. this is an ugly bit of the code and can hopefully be simplified.
-	// the problem is that we need to introduce a bunch of scales at one side of the frustum to extend the sample
-	// slice. we don't just pass in a value like 1 as this will produce a sharp dicontinuity.
-	// below we compute the last point along the sample slice (pos0), and then compute a new point to linearly
-	// extrapolate towards based on the same last radius (pos1), so we extend the sample slice with a line segment.
-	// note that none of this would be required if we could extend sampleR beyond the frustum with the correct extension
-	// of the sample slice. then the FPI would just find the correct solution and it would just work. however i dont know
-	// if this extension can be computed easily??
-	void populateNewScales( float[] scales_new_norm, float[] theta0s, float dt )
-	{
-		if( !thetaWithinView(theta0s[0]) || !thetaWithinView(theta0s[settings.scaleCount-1]) )
-		{
-			int count = 1;
-
-			// determine which side we're filling it. calling it right side as angles increase anti-clockwise
-			bool rightSide = !thetaWithinView(theta0s[0]);
-
-			int lastIndex = rightSide ? 0 : settings.scaleCount-1;
-			
-			// count how many scales we have to fill in
-			for( int i = 1; i < settings.scaleCount && !thetaWithinView(theta0s[ rightSide ? lastIndex+i : lastIndex-i ]); i++ )
-			{
-				count++;
-			}
-			
-			float theta_edge = getTheta(lastIndex);
-			
-			// interpolate from R at edge, to ideal R, so that R values smoothly return to a good place
-			float angleSubtended = 2.0f * CloudsBase.halfFov_rad * (float)count/(float)settings.scaleCount;
-			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*dt*angleSubtended );
-			float r = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
-			
-			Vector3 pos_extrapolated = transform.position + transform.forward * r * Mathf.Sin(theta_edge) + transform.right * r * Mathf.Cos(theta_edge);
-			
-			int ind = rightSide ? count : (settings.scaleCount - 1 - count);
-			float r1 = radius * scales_new_norm[ind];
-			float theta_slice_end = getTheta( ind );
-			
-			Vector3 pos_slice_end = transform.position
-				+ r1 * Mathf.Cos(theta_slice_end) * transform.right
-				+ r1 * Mathf.Sin(theta_slice_end) * transform.forward;
-			
-			// radii interpolate from pos_slice_end to pos_extrapolated
-			for( int i = 0; i < count; i++ )
-			{
-				float alpha = count > 1 ? (float)i/(float)(count-1) : 0.0f;
-				Vector3 pos = Vector3.Lerp( pos_extrapolated, pos_slice_end, alpha );
-				ind = rightSide ? i : (settings.scaleCount-1-i);
-				scales_new_norm[ind] = (pos-transform.position).magnitude / radius;
-			}
-		}
-	}
-
 	// gradient relaxation
 	// the following is complex and I don't know how much of this could maybe be done
 	// in a single pass or otherwise simplified. more experimentation is needed.
@@ -246,7 +185,7 @@ public class AdvectedScales : MonoBehaviour
 	// there are two stages - the first is an inside-out scheme which starts from
 	// the middle and moves outwards. the second is an outside-in scheme which moves
 	// towards the middle from the side.
-	void RelaxGradients( float[] r_new, float[] theta0s )
+	void RelaxGradients( float[] r_new )
 	{
 		// INSIDE OUT
 
@@ -327,7 +266,7 @@ public class AdvectedScales : MonoBehaviour
 	//
 	public float sampleR( float theta )
 	{
-		return sampleR_CONST_EXTENSION( theta );
+		return sampleR_CORRECT_EXTENSION( theta );
 	}
 	public float sampleR_CONST_EXTENSION( float theta )
 	{
@@ -374,6 +313,76 @@ public class AdvectedScales : MonoBehaviour
 		
 		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
 		
+		return result;
+	}
+
+	public float sampleR_CORRECT_EXTENSION( float theta )
+	{
+		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
+		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
+
+		if( s < 0f || s > 1f )
+		{
+			// determine which side we're on. s<0 is right side as angles increase anti-clockwise
+			bool rightSide = s < 0f;
+			int lastIndex = rightSide ? 0 : settings.scaleCount-1;
+
+			// the start and end position of the extension
+			Vector3 pos_slice_end, pos_extrapolated;
+
+			pos_slice_end = lastPos
+				+ radius * scales_norm[lastIndex] * Mathf.Cos( getTheta(lastIndex) ) * lastRight
+				+ radius * scales_norm[lastIndex] * Mathf.Sin( getTheta(lastIndex) ) * lastForward;
+
+			float theta_edge = getTheta(lastIndex);
+			float r_extrap = 1;
+
+			// compute a tentative extrapolated slice position. we don't know r_extrap yet but will compute it next
+			pos_extrapolated = transform.position
+				+ transform.forward * r_extrap * Mathf.Sin(theta_edge)
+				+ transform.right * r_extrap * Mathf.Cos(theta_edge);
+
+			float angleSubtended = Vector3.Angle( pos_slice_end - transform.position, pos_extrapolated - transform.position ) * Mathf.Deg2Rad;
+			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*(1.0f/30.0f)*angleSubtended );
+			r_extrap = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
+
+			// now compute actual pos
+			pos_extrapolated = transform.position
+				+ transform.forward * r_extrap * Mathf.Sin(theta_edge)
+				+ transform.right * r_extrap * Mathf.Cos(theta_edge);
+
+			// now intersect ray with extension to find scale.
+			Vector3 rayExtent = lastPos
+				+ Mathf.Cos( theta ) * lastRight
+				+ Mathf.Sin( theta ) * lastForward;
+
+			Vector2 inter; bool found;
+			found = IntersectLineSegments(
+				new Vector2( pos_slice_end.x, pos_slice_end.z ),
+				new Vector2( pos_extrapolated.x, pos_extrapolated.z ),
+				new Vector2( lastPos.x, lastPos.z ),
+				new Vector2( rayExtent.x, rayExtent.z ),
+				out inter
+				);
+
+			if( !found )
+				return radius;
+
+			// the lastPos.y is a bit of a fudge for flatland, not very nice and probably wrong when camera rolls
+			Vector3 pt = new Vector3( inter.x, lastPos.y, inter.y );
+
+			return (pt - lastPos).magnitude;
+		}
+
+
+		// get from 0 to rCount-1
+		s *= (float)(settings.scaleCount-1);
+		
+		int i0 = Mathf.FloorToInt(s);
+		int i1 = Mathf.CeilToInt(s);
+		
+		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
+
 		return result;
 	}
 
@@ -500,5 +509,30 @@ public class AdvectedScales : MonoBehaviour
 				Debug.DrawLine( transform.position + prevRd * radius * scale, transform.position + thisRd * radius * scale, fadeRed );
 			}
 		}
+	}
+
+	// loosely based on http://ideone.com/PnPJgb
+	static bool IntersectLineSegments(Vector2 A, Vector2 B, Vector2 C, Vector2 D, out Vector2 intersect )
+	{
+		Vector2 r = B - A;
+		Vector2 s = D - C;
+		
+		float rxs = r.x * s.y - r.y * s.x;
+		
+		if( Mathf.Abs(rxs) <= Mathf.Epsilon )
+		{
+			// Lines are parallel or collinear - this is useless for us
+			intersect = Vector2.zero;
+			return false;
+		}
+		
+		Vector2 CmA = C - A;
+		float CmAxs = CmA.x * s.y - CmA.y * s.x;
+
+		float t = CmAxs / rxs;
+
+		intersect = Vector2.Lerp( A, B, t );
+
+		return true;
 	}
 }
