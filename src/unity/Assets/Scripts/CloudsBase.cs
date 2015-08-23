@@ -117,7 +117,7 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 	{
 		get
 		{
-			return Mathf.Max( Camera.main.aspect, 1.0f ) * Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
+			return Camera.main.aspect * Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
 		}
 	}
 }
