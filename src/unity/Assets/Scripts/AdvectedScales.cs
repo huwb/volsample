@@ -264,59 +264,13 @@ public class AdvectedScales : MonoBehaviour
 	//           \|/     |
 	// ----------------------- X axis (theta = 0)
 	//
+	// for theta within the view, we sample the scale from the sample slice directly
+	// for theta outside the view, we compute a linear extension from the last point on
+	// the sample slice, to the corresponding scale at the side of the new camera position
+	// frustum. this is a linear approximation to how the sample slice needs to be extended
+	// when the frustum moves. if you rotate the camera fast then you will see the linear
+	// segments.
 	public float sampleR( float theta )
-	{
-		return sampleR_CORRECT_EXTENSION( theta );
-	}
-	public float sampleR_CONST_EXTENSION( float theta )
-	{
-		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
-		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
-		s = Mathf.Clamp01(s);
-
-		// get from 0 to rCount-1
-		s *= (float)(settings.scaleCount-1);
-
-		int i0 = Mathf.FloorToInt(s);
-		int i1 = Mathf.CeilToInt(s);
-
-		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
-
-		return result;
-	}
-	public float sampleR_GRAD_EXTENSION( float theta )
-	{
-		if( theta < Mathf.PI/2.0f - CloudsBase.halfFov_rad )
-		{
-			float dTheta = 2.0f * CloudsBase.halfFov_rad / (float)(settings.scaleCount-1);
-			float dScale = scales_norm[0] - scales_norm[1];
-			float result_norm = scales_norm[0] + ((Mathf.PI/2.0f - CloudsBase.halfFov_rad)-theta) * dScale/dTheta;
-			return result_norm * radius;
-		}
-		if( theta > Mathf.PI/2.0f + CloudsBase.halfFov_rad )
-		{
-			float dTheta = 2.0f * CloudsBase.halfFov_rad / (float)(settings.scaleCount-1);
-			float dScale = scales_norm[settings.scaleCount-1] - scales_norm[settings.scaleCount-2];
-			float result_norm = scales_norm[settings.scaleCount-1] + (theta - (Mathf.PI/2.0f + CloudsBase.halfFov_rad)) * dScale/dTheta;
-			return result_norm * radius;
-		}
-
-		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
-		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
-		s = Mathf.Clamp01(s);
-		
-		// get from 0 to rCount-1
-		s *= (float)(settings.scaleCount-1);
-		
-		int i0 = Mathf.FloorToInt(s);
-		int i1 = Mathf.CeilToInt(s);
-		
-		float result = radius * Mathf.Lerp( scales_norm[i0], scales_norm[i1], Mathf.Repeat(s, 1.0f) );
-		
-		return result;
-	}
-
-	public float sampleR_CORRECT_EXTENSION( float theta )
 	{
 		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
 		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
@@ -335,16 +289,13 @@ public class AdvectedScales : MonoBehaviour
 				+ radius * scales_norm[lastIndex] * Mathf.Sin( getTheta(lastIndex) ) * lastForward;
 
 			float theta_edge = getTheta(lastIndex);
-			float r_extrap = 1;
 
-			// compute a tentative extrapolated slice position. we don't know r_extrap yet but will compute it next
-			pos_extrapolated = transform.position
-				+ transform.forward * r_extrap * Mathf.Sin(theta_edge)
-				+ transform.right * r_extrap * Mathf.Cos(theta_edge);
-
-			float angleSubtended = Vector3.Angle( pos_slice_end - transform.position, pos_extrapolated - transform.position ) * Mathf.Deg2Rad;
-			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*(1.0f/30.0f)*angleSubtended );
-			r_extrap = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
+			// we always nudge scale back to default val (scale return). to compute how much we're nudging
+			// the scale, we find our how far we're extending it, and we do this in radians.
+			Vector3 extrapolatedDir = transform.forward * Mathf.Sin(theta_edge) + transform.right * Mathf.Cos(theta_edge);
+			float angleSubtended = Vector3.Angle( pos_slice_end - transform.position, extrapolatedDir ) * Mathf.Deg2Rad;
+			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*angleSubtended );
+			float r_extrap = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
 
 			// now compute actual pos
 			pos_extrapolated = transform.position
@@ -365,15 +316,19 @@ public class AdvectedScales : MonoBehaviour
 				out inter
 				);
 
+			// no unique intersection point - shouldnt happen
 			if( !found )
-				return radius;
+				return sampleR(theta_edge);
 
-			// the lastPos.y is a bit of a fudge for flatland, not very nice and probably wrong when camera rolls
-			Vector3 pt = new Vector3( inter.x, lastPos.y, inter.y );
+			// the intersection point between the ray for the query theta and the linear extension
+			Vector3 pt = new Vector3( inter.x, 0f, inter.y );
 
-			return (pt - lastPos).magnitude;
+			// make flatland
+			Vector3 offset = pt - lastPos;
+			offset.y = 0f;
+
+			return offset.magnitude;
 		}
-
 
 		// get from 0 to rCount-1
 		s *= (float)(settings.scaleCount-1);
@@ -512,6 +467,8 @@ public class AdvectedScales : MonoBehaviour
 	}
 
 	// loosely based on http://ideone.com/PnPJgb
+	// performance of this is very bad, lots of temp things being constructed. i should really just inline the code
+	// above but leaving like this for now.
 	static bool IntersectLineSegments(Vector2 A, Vector2 B, Vector2 C, Vector2 D, out Vector2 intersect )
 	{
 		Vector2 r = B - A;

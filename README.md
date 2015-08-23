@@ -39,9 +39,12 @@ The core of this is an advection process used to keep sample slices stationary. 
 
 The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point. We use Fixed Point Iteration (FPI) to invert this - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale. See [2] for more information about FPI applied to related problems.
 
-Special handling is required for new scales (i.e. to extend the sample slice at the sides when the frustum moves). Ideally the sample slice would be extended along the motion path of the point at the right of the frustum. If this extension could be provided to FPI then FPI would probably yield the full, final solution. However I'm not sure if this is possible. Instead we detect if the iteration has landed off the slice and then manually extend the slice. This is done as a linear approximation to the extension - i.e. 1 line segment. If you e.g. spin the camera very fast you will see that the slice is extended using line segments. However for normal motion it is not visible and it seems to be pretty stable so this is probably good enough for our needs.
+The sample slice is extended as required in an elegant way. Linear extensions are added to the sample slice based on the camera motion, and this extended slice is the one that FPI iterates over.
+This means that the solution from FPI is good to go without any further treatment.
+To see this set `debugFreezeAdvection` to true and then rotate the camera, to see how the slice is extended.
+Hopefully this generalises to advection of 2D sample slices, to support full 3D rotations.
 
-As far as we can tell Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.
+It seems Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.
 
 
 ### Adaptive Sampling
@@ -58,20 +61,22 @@ You may run into the following:
 * If you see just the standard sky box render in the camera view, re-enable the *CloudsRayScales* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try reopening Unity.
 * You may notice the sample layout changes shape slightly when the camera moves forwards/backwards. This is actually by design and is happening in the advection code (if `advectionCompensatesForwardPin` is true), and compensates for the non-trivial motion of samples when we forward pin them. Look for comments around this variable and usages of the variable in the code.
 
+
 ## Bugs and improvement directions
 
 There are many directions for improving this work
 
 * Gradient relaxation is a little complicated at the moment, doing multiple passes in different directions from different starting points. I believe with experimentation this could be simplified. Also, it currently doesn't always work well enough - you can sometimes still see pinching. We may want to define a maximum gradient that is never exceeded (a hard limit instead of the current soft process).
-* Generalisation from flatland 2D to full 3D motions. Ray scales are currently a 1D array of floats, indexed by ray angle on the xz plane. This would have to generalise to a 2D array. The advection procedure generalise easily. The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.
+* Generalisation from flatland 2D to full 3D motions. Ray scales are currently a 1D array of floats, indexed by ray angle on the xz plane. This would have to generalise to a 2D array. The advection procedure should generalise. The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.
 * The ray scale clamping works well most of the time but when transitioning straight from a strafing layout to a rotating layout, some of the ray scales get clamped and is causing some aliasing. I'm not sure if this is a bug or a limitation of the current clamping scheme.
 * The adaptive sampling distances and weights are currently dynamically computed in *Clouds.shader*. It would be more efficient to pass them in to the shader - see notes above.
 * The render generally breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
-
-[ADVANCES2015]: http://advances.realtimerendering.com/s2015/index.html "Advances in Real-Time Rendering - SIGGRAPH 2015"
+* By freezing the advection (`debugFreezeAdvection`) and strafing the camera a lot, it can be seen that the solution from FPI starts to break down. In general this happens when the absolute gradient of the iterate approaches one [2]. This could be computed analytically and could provide a robust teleport/clear condition (instead of the current ad hoc threshold).
 
 
 ## References
+
+[ADVANCES2015]: http://advances.realtimerendering.com/s2015/index.html "Advances in Real-Time Rendering - SIGGRAPH 2015"
 
 [1] Bowles H. and Zimmermann D., *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, Advances in Real-Time Rendering in Games course, SIGGRAPH 2015. [Course page][ADVANCES2015].
 
