@@ -37,8 +37,8 @@ public class AddFireFlies : MonoBehaviour {
 		if( timer == 0 )
 		{
 			Spawn( Mathf.PI/2.0f );
-			Spawn( Mathf.PI/2.0f + CloudsBase.halfFov_rad );
-			Spawn( Mathf.PI/2.0f - CloudsBase.halfFov_rad );
+			Spawn( Mathf.PI/2.0f + CloudsBase.halfFov_horiz_rad );
+			Spawn( Mathf.PI/2.0f - CloudsBase.halfFov_horiz_rad );
 
 			timer = delay;
 		}

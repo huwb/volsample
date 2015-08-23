@@ -268,5 +268,5 @@ public class DiagramOverlay : MonoBehaviour {
 		}
 	}
 	
-	float getTheta( int i ) { return 2.0f * CloudsBase.halfFov_rad * (float)i/(float)(settings.scaleCount-1) - CloudsBase.halfFov_rad + Mathf.PI/2.0f; }
+	float getTheta( int i ) { return 2.0f * CloudsBase.halfFov_horiz_rad * (float)i/(float)(settings.scaleCount-1) - CloudsBase.halfFov_horiz_rad + Mathf.PI/2.0f; }
 }

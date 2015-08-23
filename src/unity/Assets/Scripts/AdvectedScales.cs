@@ -53,7 +53,7 @@ public class AdvectedScales : MonoBehaviour
 		// init scales to something interesting
 		for( int i = 0; i < settings.scaleCount; i++ )
 		{
-			float fixedZ = Mathf.Lerp( Mathf.Cos(CloudsBase.halfFov_rad), 1.0f, settings.fixedZProp ) / Mathf.Sin(getTheta(i));
+			float fixedZ = Mathf.Lerp( Mathf.Cos(CloudsBase.halfFov_horiz_rad), 1.0f, settings.fixedZProp ) / Mathf.Sin(getTheta(i));
 			float fixedR = (Mathf.Sin(8.0f*i/(float)settings.scaleCount)*settings.fixedRNoise + 1.0f);
 			scales_norm[i] = Mathf.Lerp( fixedZ, fixedR, settings.reInitCurvature );
 		}
@@ -126,7 +126,7 @@ public class AdvectedScales : MonoBehaviour
 				{
 					// min: an inverted circle, i.e. concave instead of convex. this allows obiting
 					// max: the fixed z line at the highest point of the circle. this allows strafing after rotating without aliasing
-					scales_new_norm[i] = Mathf.Clamp( scales_new_norm[i], 0.9f*(1.0f - (Mathf.Sin(getTheta(i))-Mathf.Cos(CloudsBase.halfFov_rad))), 1.0f/Mathf.Sin(getTheta(i)) );
+					scales_new_norm[i] = Mathf.Clamp( scales_new_norm[i], 0.9f*(1.0f - (Mathf.Sin(getTheta(i))-Mathf.Cos(CloudsBase.halfFov_horiz_rad))), 1.0f/Mathf.Sin(getTheta(i)) );
 				}
 			}
 
@@ -235,7 +235,7 @@ public class AdvectedScales : MonoBehaviour
 		
 		for( int i = 0; i < settings.scaleCount; i++ )
 		{
-			scales_norm[i] = Mathf.Cos( CloudsBase.halfFov_rad ) / Mathf.Sin( getTheta(i) );
+			scales_norm[i] = Mathf.Cos( CloudsBase.halfFov_horiz_rad ) / Mathf.Sin( getTheta(i) );
 		}
 		
 		lastPos = transform.position;
@@ -244,8 +244,8 @@ public class AdvectedScales : MonoBehaviour
 	}
 
 	public Vector3 View( float theta ) { float r = sampleR(theta); return r*Mathf.Cos(theta)*Vector3.right + r*Mathf.Sin(theta)*Vector3.forward; }
-	public float getTheta( int i ) { return 2.0f * CloudsBase.halfFov_rad * (float)i/(float)(settings.scaleCount-1) - CloudsBase.halfFov_rad + Mathf.PI/2.0f; }
-	bool thetaWithinView( float theta ) { return Mathf.Abs( theta - Mathf.PI/2.0f ) <= CloudsBase.halfFov_rad; }
+	public float getTheta( int i ) { return 2.0f * CloudsBase.halfFov_horiz_rad * (float)i/(float)(settings.scaleCount-1) - CloudsBase.halfFov_horiz_rad + Mathf.PI/2.0f; }
+	bool thetaWithinView( float theta ) { return Mathf.Abs( theta - Mathf.PI/2.0f ) <= CloudsBase.halfFov_horiz_rad; }
 	
 	Vector3 GetRay( float theta )
 	{
@@ -273,7 +273,7 @@ public class AdvectedScales : MonoBehaviour
 	public float sampleR( float theta )
 	{
 		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
-		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_rad))/(2.0f*CloudsBase.halfFov_rad);
+		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_horiz_rad))/(2.0f*CloudsBase.halfFov_horiz_rad);
 
 		if( s < 0f || s > 1f )
 		{
@@ -460,7 +460,7 @@ public class AdvectedScales : MonoBehaviour
 				Color fadeRed = Color.red;
 				fadeRed.a = 0.25f;
 				Debug.DrawLine( transform.position + prevRd * radius * scale, transform.position + thisRd * radius * scale, fadeRed );
-				scale = Mathf.Cos(CloudsBase.halfFov_rad) / Mathf.Sin(thisTheta);
+				scale = Mathf.Cos(CloudsBase.halfFov_horiz_rad) / Mathf.Sin(thisTheta);
 				Debug.DrawLine( transform.position + prevRd * radius * scale, transform.position + thisRd * radius * scale, fadeRed );
 			}
 		}

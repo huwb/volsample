@@ -113,11 +113,19 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 		GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;
 	}
 	
-	public static float halfFov_rad
+	public static float halfFov_horiz_rad
 	{
 		get
 		{
 			return Camera.main.aspect * Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
+		}
+	}
+
+	public static float halfFov_vert_rad
+	{
+		get
+		{
+			return Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
 		}
 	}
 }

@@ -91,7 +91,7 @@ public class UploadRayScales : MonoBehaviour
 				float r0 = -1;
 
 				Vector3 pos = meshes[k].transform.TransformPoint( verts[i] );
-				float theta = -CloudsBase.halfFov_rad * pos.x/5.0f + Mathf.PI/2.0f;
+				float theta = -CloudsBase.halfFov_horiz_rad * pos.x/5.0f + Mathf.PI/2.0f;
 
 				r0 = ars[0].sampleR( theta ) / ars[0].radius;
 

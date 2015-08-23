@@ -63,7 +63,7 @@ public class CloudsRayScales : CloudsBase
 		cloudsMaterial.SetTexture( "_RValuesTex", scaleValuesTexture );
 		cloudsMaterial.SetVector( "_ScalesTexTexelCenters", new Vector4( 0.5f / (float)scaleValuesTexture.width, ((float)scaleValuesTexture.width - 0.5f) / (float)scaleValuesTexture.width, 0.0f, 0.0f ) );
 
-		cloudsMaterial.SetFloat( "_HalfFov", halfFov_rad );
+		cloudsMaterial.SetFloat( "_HalfFov", halfFov_horiz_rad );
 
 		cloudsMaterial.SetFloat( "_SamplesAdaptivity", m_samplesAdaptivity*2 );
 		cloudsMaterial.SetFloat( "_DistMax", m_distMax );
