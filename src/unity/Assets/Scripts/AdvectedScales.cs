@@ -294,7 +294,7 @@ public class AdvectedScales : MonoBehaviour
 			// the scale, we find our how far we're extending it, and we do this in radians.
 			Vector3 extrapolatedDir = transform.forward * Mathf.Sin(theta_edge) + transform.right * Mathf.Cos(theta_edge);
 			float angleSubtended = Vector3.Angle( pos_slice_end - transform.position, extrapolatedDir ) * Mathf.Deg2Rad;
-			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturn*angleSubtended );
+			float lerpAlpha = Mathf.Clamp01( motionMeasure*settings.alphaScaleReturnPerRadian*angleSubtended );
 			float r_extrap = Mathf.Lerp( sampleR(theta_edge), radius, lerpAlpha );
 
 			// now compute actual pos
