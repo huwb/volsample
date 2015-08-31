@@ -275,7 +275,7 @@ public class AdvectedScales : MonoBehaviour
 		// move theta from [pi/2 - halfFov, pi/2 + halfFov] to [0,1]
 		float s = (theta - (Mathf.PI/2.0f-CloudsBase.halfFov_horiz_rad))/(2.0f*CloudsBase.halfFov_horiz_rad);
 
-		if( s < 0f || s > 1f )
+		if( s < -0.001f || s > 1.001f )
 		{
 			// determine which side we're on. s<0 is right side as angles increase anti-clockwise
 			bool rightSide = s < 0f;
@@ -329,6 +329,8 @@ public class AdvectedScales : MonoBehaviour
 
 			return offset.magnitude;
 		}
+
+		s = Mathf.Clamp01( s );
 
 		// get from 0 to rCount-1
 		s *= (float)(settings.scaleCount-1);
