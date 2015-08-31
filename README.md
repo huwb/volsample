@@ -5,6 +5,9 @@ Research on sampling methods for real-time volume rendering
 
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)
 
+Contacts: Huw Bowles (huw dot bowles at studiogobo dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com)
+
+
 ## Intro
 
 This is the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015 [1]. The full presentation PPT is available for download from the course page [here][ADVANCES2015] - this is the best place to start for an introduction to this project.
@@ -37,17 +40,28 @@ This is then passed into the clouds shader in *CloudsRayScales.cs*, which then s
 
 The core of this is an advection process used to keep sample slices stationary. The two sample slices are drawn in the Editor view if `AdvectedScalesSettings.debugDrawAdvection` is true, so you can verify that they are stationary. These debug draws do not use Forward Pinning, so they will only appear stationary if you rotate and strafe the camera only.
 
-The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point. We use Fixed Point Iteration (FPI) to invert this - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale. See [2] for more information about FPI applied to related problems.
+The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point.
+
+#### Fixed Point Iteration Advection
+
+The initial published algorithm used Fixed Point Iteration (FPI) to advect the scales - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale. See [2] for more information about FPI applied to related problems.
 
 The sample slice is extended as required in an elegant way. Linear extensions are added to the sample slice based on the camera motion, and this extended slice is the one that FPI iterates over.
 This means that the solution from FPI is good to go without any further treatment.
 To see this set `debugFreezeAdvection` to true and then rotate the camera, to see how the slice is extended.
 
-Hopefully this generalises to advection of 2D sample slices, to support full 3D rotations.
-There is a test pushed *AdvectedScales2D.cs* - add this script to the camera to see a proof of concept for the basic advection without the linear extensions (debug drawing only for now).
-The next step is to figure out how to do the extensions in 2D.
-
 It seems Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.
+
+This algorithm at least partially generalises to advection of 2D sample slices, to support full 3D rotations.
+There is a test pushed *AdvectedScales2D.cs* - add this script to the camera to see a proof of concept for the basic advection without the linear extensions (debug drawing only for now).
+However I got stuck trying to implement the slice extensions in 2D which feels like a hard problem.
+
+
+#### GPU-based advection
+
+Instead of performing the advection manually using FPI, I found an easier path. Simply render the sample slice at the new camera position into the new scale texture. 
+
+I have what I believe is a solid proof of concept - see the scene RasteriseScales2D (you must play the scene to see it). You should see a 2D sample slice that is more or less stationary when you move the camera. I haven't hooked it up to a render yet.
 
 
 ### Adaptive Sampling
