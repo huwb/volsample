@@ -81,6 +81,9 @@ public class RenderScales2D : MonoBehaviour {
 
 		cam.targetTexture = m_currentTarget;
 		RenderTexture sourceScalesTex = (m_currentTarget == m_scalesTex0) ? m_scalesTex1 : m_scalesTex0;
+		if( m_currentTarget.width != sourceScalesTex.width )
+			Debug.LogWarning("Two scales textures have different dimensions. Not necessarily fatal but seems odd?");
+
 		m_material.SetTexture( "_PrevScalesTex", sourceScalesTex );
 		m_material.SetFloat( "_ScalesTexSideDim", sourceScalesTex.width );
 
