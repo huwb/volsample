@@ -59,9 +59,12 @@ However I got stuck trying to implement the slice extensions in 2D which feels l
 
 #### GPU-based advection
 
-Instead of performing the advection manually using FPI, I found an easier path. Simply render the sample slice at the new camera position into the new scale texture. 
+Instead of performing the advection manually using FPI, I found an easier path.
+Simply render the previous frame sample slice into the current frame camera view, writing each pixel depth into the new scale texture. 
 
-I have what I believe is a solid proof of concept - see the scene RasteriseScales2D (you must play the scene to see it). You should see a 2D sample slice that is more or less stationary when you move the camera. I haven't hooked it up to a render yet.
+I have what I believe is a solid proof of concept - see the scene RasteriseScales2D (you must play the scene to see it).
+You should see a 2D sample slice that is more or less stationary when you move the camera (except for forward motion - as before, this component of the motion is compensated using Forward Pinning).
+I haven't hooked it up to a raymarcher yet.
 
 
 ### Adaptive Sampling
@@ -85,8 +88,9 @@ There are many directions for improving this work
 
 * Gradient relaxation is a little complicated at the moment, doing multiple passes in different directions from different starting points. I believe with experimentation this could be simplified. Also, it currently doesn't always work well enough - you can sometimes still see pinching. We may want to define a maximum gradient that is never exceeded (a hard limit instead of the current soft process).
 * Generalisation from flatland 2D to full 3D motions.
-  I have implemented a proof of concept for the basic advection (see notes above), but the linear extensions are not figured out yet, so new scales are inappropriate.
-  The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.
+  ~~I have implemented a proof of concept for the basic advection (see notes above), but the linear extensions are not figured out yet, so new scales are inappropriate.~~
+  ~~The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.~~
+  I have a proof of concept running for GPU-based scale advection supporting full 3D transforms - see General Pinning section above.
 * The ray scale clamping works well most of the time but when transitioning straight from a strafing layout to a rotating layout, some of the ray scales get clamped and is causing some aliasing. I'm not sure if this is a bug or a limitation of the current clamping scheme.
 * The adaptive sampling distances and weights are currently dynamically computed in *Clouds.shader*. It would be more efficient to pass them in to the shader - see notes above.
 * The render generally breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
