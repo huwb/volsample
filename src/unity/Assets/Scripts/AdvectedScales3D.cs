@@ -26,14 +26,8 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(Camera))]
-public class RenderScales2D : MonoBehaviour {
-
-	[Tooltip("Used to differentiate/sort the two advection computations")]
-	public int m_radiusIndex = 0;
-	
-	[Tooltip("The radius of this sample slice. Advection is performed at this radius")]
-	public float m_radius = 10.0f;
-
+public class AdvectedScales3D : AdvectedScales
+{
 	public RenderTexture m_scalesTex0;
 	public RenderTexture m_scalesTex1;
 	RenderTexture m_currentTarget;

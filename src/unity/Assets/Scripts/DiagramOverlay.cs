@@ -171,7 +171,7 @@ public class DiagramOverlay : MonoBehaviour {
 			CreateLineMaterial ();
 			lineMaterial.SetPass (0);
 
-			AdvectedScales[] ars = GetComponents<AdvectedScales> ();
+			AdvectedScalesFlatland[] ars = GetComponents<AdvectedScalesFlatland>();
 			if( ars.Length == 0 )
 				return;
 			
@@ -180,10 +180,10 @@ public class DiagramOverlay : MonoBehaviour {
 			{
 				for( int j = i - 1; j >= 0; j-- )
 				{
-					if( ars[j].radiusIndex <= ars[j+1].radiusIndex )
+					if( ars[j].m_radiusIndex <= ars[j+1].m_radiusIndex )
 						break;
 					
-					AdvectedScales temp = ars[j+1];
+					AdvectedScalesFlatland temp = ars[j+1];
 					ars[j+1] = ars[j];
 					ars[j] = temp;
 				}

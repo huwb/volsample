@@ -55,7 +55,7 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 			AdvectedScales[] ars = GetComponents<AdvectedScales>();
 			AdvectedScales rVals = null;
 			for (int i = 0; i < ars.Length; i++) {
-				if( ars[i].radiusIndex == 0 )
+				if( ars[i].m_radiusIndex == 0 )
 				{
 					rVals = ars[i];
 					break;

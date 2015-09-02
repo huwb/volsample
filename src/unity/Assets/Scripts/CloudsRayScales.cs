@@ -90,13 +90,13 @@ public class CloudsRayScales : CloudsBase
 		{
 			if( ars.Length == 1 )
 			{
-				radius0 = ars[0].radius;
+				radius0 = ars[0].m_radius;
 				oneOverRadiusDiff = 0;
 			}
 			else
 			{
-				radius0 = ars[0].radiusIndex < ars[1].radiusIndex ? ars[0].radius : ars[1].radius;
-				float radius1 = ars[0].radiusIndex > ars[1].radiusIndex ? ars[0].radius : ars[1].radius;
+				radius0 = ars[0].m_radiusIndex < ars[1].m_radiusIndex ? ars[0].m_radius : ars[1].m_radius;
+				float radius1 = ars[0].m_radiusIndex > ars[1].m_radiusIndex ? ars[0].m_radius : ars[1].m_radius;
 				if( radius0 == radius1 )
 					oneOverRadiusDiff = 0;
 				else

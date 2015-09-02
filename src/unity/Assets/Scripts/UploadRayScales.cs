@@ -42,7 +42,7 @@ public class UploadRayScales : MonoBehaviour
 
 	void LateUpdate()
 	{
-		AdvectedScales[] ars = viewer.GetComponents<AdvectedScales> ();
+		AdvectedScalesFlatland[] ars = viewer.GetComponents<AdvectedScalesFlatland> ();
 		if( ars.Length == 0 )
 			return;
 
@@ -51,10 +51,10 @@ public class UploadRayScales : MonoBehaviour
 		{
 			for( int j = i - 1; j >= 0; j-- )
 			{
-				if( ars[j].radiusIndex <= ars[j+1].radiusIndex )
+				if( ars[j].m_radiusIndex <= ars[j+1].m_radiusIndex )
 					break;
 
-				AdvectedScales temp = ars[j+1];
+				AdvectedScalesFlatland temp = ars[j+1];
 				ars[j+1] = ars[j];
 				ars[j] = temp;
 			}
@@ -93,12 +93,12 @@ public class UploadRayScales : MonoBehaviour
 				Vector3 pos = meshes[k].transform.TransformPoint( verts[i] );
 				float theta = -CloudsBase.halfFov_horiz_rad * pos.x/5.0f + Mathf.PI/2.0f;
 
-				r0 = ars[0].sampleR( theta ) / ars[0].radius;
+				r0 = ars[0].sampleR( theta ) / ars[0].m_radius;
 
 				float r1;
 
 				if( ars.Length > 1 && AdvectedScalesSettings.instance.twoRSolution )
-					r1 = ars[1].sampleR( theta ) / ars[1].radius;
+					r1 = ars[1].sampleR( theta ) / ars[1].m_radius;
 				else
 					r1 = r0;
 

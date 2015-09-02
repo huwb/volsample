@@ -48,8 +48,8 @@ public class AddFireFlies : MonoBehaviour {
 	{
 		Transform inst = Instantiate( prefab ) as Transform;
 
-		AdvectedScales[] ars = GetComponents<AdvectedScales> ();
-		foreach (AdvectedScales ar in ars) {
+		AdvectedScalesFlatland[] ars = GetComponents<AdvectedScalesFlatland> ();
+		foreach (AdvectedScalesFlatland ar in ars) {
 			Vector3 pos = transform.position + transform.TransformDirection( ar.View(theta) );
 			//float r = drt.sampleR(Mathf.PI/2.0f);
 			inst.position = pos; //transform.position + r * transform.forward;
