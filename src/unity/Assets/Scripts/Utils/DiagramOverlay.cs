@@ -92,7 +92,7 @@ public class DiagramOverlay : MonoBehaviour {
 	
 	float mod_mov( float x, float y )
 	{
-		CloudsRayScales crs = GetComponent<CloudsRayScales>();
+		CloudsRayScalesFlatland crs = GetComponent<CloudsRayScalesFlatland>();
 		float distTravelledForward = crs ? crs.m_distTravelledForward : 0.0f;
 		return Mathf.Repeat( x + distTravelledForward, y );
 	}
@@ -119,7 +119,7 @@ public class DiagramOverlay : MonoBehaviour {
 		else
 		{
 			dt = figureRadius / Mathf.Max ((float)nSlices, 1); // this.dt;
-			float distTravelledForward = GetComponent<CloudsRayScales>().m_distTravelledForward;
+			float distTravelledForward = GetComponent<CloudsRayScalesFlatland>().m_distTravelledForward;
 			t = dt - Mathf.Repeat (distTravelledForward, dt);
 			wt = 1f; // not used
 			even = true; // not used
