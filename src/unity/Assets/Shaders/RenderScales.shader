@@ -39,7 +39,6 @@ SOFTWARE.
 
 Shader "Custom/RenderScales2D" {
 	Properties {
-		_PrevScalesTex ("Base (RGB)", 2D) = "" {}
 	}
 
 	CGINCLUDE

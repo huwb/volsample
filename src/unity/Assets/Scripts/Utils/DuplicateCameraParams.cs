@@ -41,7 +41,5 @@ public class DuplicateCameraParams : MonoBehaviour
 		Camera thisCam = GetComponent<Camera>();
 		thisCam.fieldOfView = m_otherCamera.fieldOfView;
 		thisCam.orthographic = m_otherCamera.orthographic;
-		thisCam.nearClipPlane = m_otherCamera.nearClipPlane;
-		thisCam.farClipPlane = m_otherCamera.farClipPlane;
 	}
 }
