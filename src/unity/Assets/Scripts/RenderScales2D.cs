@@ -90,6 +90,7 @@ public class RenderScales2D : MonoBehaviour {
 		m_material.SetFloat( "_CannonicalScale", m_radius );
 		m_material.SetFloat( "_ScaleReturnAlpha", AdvectedScalesSettings.instance.alphaScaleReturnPerMeter );
 
+		// i dont think the first update logic works because the first update happens before rendering starts or something like that?
 		m_material.SetFloat( "_ClearScalesToValue", (AdvectedScalesSettings.instance.reInitScales || m_firstUpdate) ? AdvectedScalesSettings.instance.initScaleVal : -1f );
 		m_firstUpdate = false;
 

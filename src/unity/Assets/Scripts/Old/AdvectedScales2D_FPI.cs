@@ -22,11 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// this is an attempt to generalise the sample slice advection based on FPI to support full 3D transformations
+// (so a 2D ray scale texture). the core works but the slice extension proved to be difficult and was never
+// implemented
+
 using UnityEngine;
 using System.Collections;
 
 [ExecuteInEditMode]
-public class AdvectedScales2D : MonoBehaviour
+public class AdvectedScales2D_FPI : MonoBehaviour
 {
 	[Tooltip("Used to differentiate/sort the two advection computations")]
 	public int radiusIndex = 0;
