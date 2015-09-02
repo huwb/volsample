@@ -30,8 +30,8 @@ SOFTWARE.
 
 Shader "Custom/Clouds Flatland" {
 	Properties {
+		// for some reason i need this, otherwise the render appears upside down?
 		_MainTex ("Base (RGB)", 2D) = "" {}
-		_RValueTex ("R Values (Float)", 2D) = "" {}
 	}
 	
 	CGINCLUDE

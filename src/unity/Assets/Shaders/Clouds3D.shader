@@ -28,10 +28,9 @@ SOFTWARE.
 // it doesn't seem to be possible to pass an array to a shader, so we just compute the sampling directly
 // in the shader. see this for an example: 
 
-Shader "Custom/Clouds" {
+Shader "Custom/Clouds 3D" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "" {}
-		_RValueTex ("R Values (Float)", 2D) = "" {}
 	}
 	
 	CGINCLUDE
@@ -41,7 +40,7 @@ Shader "Custom/Clouds" {
 	// the number of volume samples to take
 	#define SAMPLE_COUNT 32
 	// use this to turn adaptive sampling on/off
-	#define ADAPTIVE_SAMPLING
+	//#define ADAPTIVE_SAMPLING
 	// sun direction
 	#define SUN_DIR float3(-0.70710678,0.,-.70710678)
 	
@@ -53,8 +52,8 @@ Shader "Custom/Clouds" {
 	sampler2D _MainTex;
 	uniform float4 _MainTex_TexelSize;
 
-	sampler2D _RValuesTex;
-	uniform float2 _ScalesTexTexelCenters = float2(0.5/32.0, 31.5/32.0);
+	sampler2D _RayScalesTex0;
+	sampler2D _RayScalesTex1;
 
 	sampler2D _CameraDepthNormalsTexture;
 	sampler2D_float _CameraDepthTexture;
@@ -65,7 +64,7 @@ Shader "Custom/Clouds" {
 	uniform float4 _CamPos;
 	uniform float4 _CamForward;
 	uniform float4 _CamRight;
-	uniform float _HalfFov = 30.0;
+	uniform float  _HalfFov;
 	
 	uniform float _DistMax = 128.0;
 	
@@ -293,23 +292,18 @@ Shader "Custom/Clouds" {
 	
 	float4 frag(v2fd i) : SV_Target 
 	{	
-		//float centerDepth = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv[1]));
-		//float2 uvDist = _SampleDistance * _MainTex_TexelSize.xy;
-		
 		float3 camUp = cross( _CamForward.xyz, _CamRight.xyz );
 		
 		float2 q = i.uv[1];
-		
 		float2 p = 2.0*(q - 0.5);
 		
     	float fovH = tan(_HalfFov);
     	float fovV = tan(_HalfFov * _ScreenParams.y/_ScreenParams.x);
 		float3 rd = normalize(_CamForward.xyz + p.y * fovV * camUp + p.x * fovH * _CamRight.xyz);
 		
-		float rLookUp = ( 1. - (atan2(dot(rd,_CamForward),dot(rd,_CamRight))-acos(0.))/_HalfFov )/2.;
-		// texel values. going to the texture boundary is wrong for both clamp and wrap, the range lies over the texel centers
-		rLookUp = lerp( _ScalesTexTexelCenters.x, _ScalesTexTexelCenters.y, rLookUp );
-		rValues = tex2Dlod( _RValuesTex, float4( rLookUp, 0.5, 0.0, 0.0 ) ).xy;
+		rValues.x = tex2Dlod( _RayScalesTex0, float4( i.uv[1], 0.0, 0.0 ) ).x;
+		rValues.y = tex2Dlod( _RayScalesTex1, float4( i.uv[1], 0.0, 0.0 ) ).x;
+		rValues.x = rValues.y = 1.0;
 		
     	float4 res = raymarch( _CamPos, rd );
     	
@@ -321,11 +315,8 @@ Shader "Custom/Clouds" {
 	    
 	    // post process
 		col = clamp(col, 0., 1.);
-		col = smoothstep(0.,1.,col);
-		//   col = col*0.5 + 0.5*col*col*(3.0-2.0*col); //saturation
-		//  col = pow(col, vec3(0.416667))*1.055 - 0.055; //sRGB
-		
-		col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); //Vign
+		col = smoothstep(0.,1.,col); // Contrast
+		col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); // Vignette
 	    
 	    return float4( col, 1.0 );
 	}
