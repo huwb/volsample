@@ -90,7 +90,7 @@ public class RenderScales2D : MonoBehaviour {
 		m_material.SetFloat( "_CannonicalScale", m_radius );
 		m_material.SetFloat( "_ScaleReturnAlpha", AdvectedScalesSettings.instance.alphaScaleReturnPerMeter );
 
-		m_material.SetFloat( "_ClearScales", (AdvectedScalesSettings.instance.reInitScales || m_firstUpdate) ? 1.0f : 0.0f );
+		m_material.SetFloat( "_ClearScalesToValue", (AdvectedScalesSettings.instance.reInitScales || m_firstUpdate) ? AdvectedScalesSettings.instance.initScaleVal : -1f );
 		m_firstUpdate = false;
 
 		float pullInCam = Vector3.Dot(transform.position-m_lastPos, transform.forward);

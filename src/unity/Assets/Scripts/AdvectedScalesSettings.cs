@@ -52,6 +52,7 @@ public class AdvectedScalesSettings : MonoBehaviour
 	[Range(0,1)] public float fixedRNoise = 0;
 	[Tooltip("For fixed Z layout (curvature = 0), a simple offset useful for testing")]
 	[Range(0,1)] public float fixedZProp = 0;
+	public float initScaleVal = 10f;
 
 	[Tooltip("Clear ray scales when discontinuity in camera motion detected")]
 	public bool clearOnTeleport = true;

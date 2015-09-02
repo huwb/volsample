@@ -68,13 +68,12 @@ Shader "Custom/RenderScales2D" {
 	
 	uniform float _ForwardPinShift = 0.0;
 	
-	uniform float _ClearScales = false;
-
+	uniform float _ClearScalesToValue = -1.0;
 	
 	struct v2fd
 	{
 		float4 pos  : SV_POSITION;
-		float  dist : TEXCOORD0;
+		float2 dist_angleFromCenter : TEXCOORD0;
 	};
 	
 	v2fd vert( appdata_img v )
@@ -88,8 +87,8 @@ Shader "Custom/RenderScales2D" {
 	    
 	    float scale = tex2Dlod( _PrevScalesTex, float4( v.texcoord, 0.0, 0.0 ) ).x;
 
-		if( _ClearScales == 1.0 )
-			scale = _CannonicalScale;
+		if( _ClearScalesToValue > -1.0 )
+			scale = _ClearScalesToValue;
 		
 	    // compute vertex position	    
 	    // boundary verts form the extension
@@ -102,23 +101,30 @@ Shader "Custom/RenderScales2D" {
 	    if( !extensionVert )
 	    {
 			o.pos = mul( UNITY_MATRIX_VP, float4(pos_slice_world, 1.) );
-			o.dist = length(pos_slice_world - _CamPos);
+			o.dist_angleFromCenter.x = length(pos_slice_world - _CamPos);
 	    }
 	    else
 	    {
 		    float3 d_cam = d.x * _CamRight + d.y * _CamUp + d.z * _CamForward;
 	    	float3 posWorld = _CamPos + scale * d_cam;
 	    	o.pos = mul( UNITY_MATRIX_VP, float4(posWorld, 1.) );
-	    	o.dist = lerp( scale, _CannonicalScale, min(1., _ScaleReturnAlpha * length(posWorld - pos_slice_world)) );
-	    	o.pos = mul( UNITY_MATRIX_VP, float4(_CamPos + d_cam*o.dist, 1.) );
+	    	o.dist_angleFromCenter.x = lerp( scale, _CannonicalScale, min(1., _ScaleReturnAlpha * length(posWorld - pos_slice_world)) );
+	    	o.pos = mul( UNITY_MATRIX_VP, float4(_CamPos + d_cam*o.dist_angleFromCenter.x, 1.) );
 	    }
+		
+		o.dist_angleFromCenter.y = acos( d.z );
 		
 		return o;
 	}
 	
 	float4 frag(v2fd i) : SV_Target 
 	{
-		return (float4)i.dist;
+		// max: the fixed z line at the highest point of the circle. this allows strafing after rotating without aliasing
+		float maxScale = _CannonicalScale / cos( i.dist_angleFromCenter.y );
+		// min: 90% of the fixed z line
+		float minScale = 0.9*_CannonicalScale * cos(length(_HalfFov)) / cos( i.dist_angleFromCenter.y );
+		
+		return (float4) clamp( i.dist_angleFromCenter.x, minScale, maxScale );
 	}
 	
 	ENDCG 
