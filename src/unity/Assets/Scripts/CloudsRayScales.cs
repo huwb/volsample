@@ -71,27 +71,29 @@ public class CloudsRayScales : CloudsBase
 		
 		
 		// upload info needed to interpolate ray scales during ray march
-		float radius0 = 10;
-		float oneOverRadiusDiff = 50;
+		float radius0 = 10f;
+		float radius1 = 64f;
+		float oneOverRadiusDiff = 1f/54f;
 		AdvectedScales[] ars = GetComponents<AdvectedScales>();
 		if( ars.Length > 0 )
 		{
 			if( ars.Length == 1 )
 			{
 				radius0 = ars[0].m_radius;
+				radius1 = radius0;
 				oneOverRadiusDiff = 0;
 			}
 			else
 			{
 				radius0 = ars[0].m_radiusIndex < ars[1].m_radiusIndex ? ars[0].m_radius : ars[1].m_radius;
-				float radius1 = ars[0].m_radiusIndex > ars[1].m_radiusIndex ? ars[0].m_radius : ars[1].m_radius;
+				radius1 = ars[0].m_radiusIndex > ars[1].m_radiusIndex ? ars[0].m_radius : ars[1].m_radius;
 				if( radius0 == radius1 )
 					oneOverRadiusDiff = 0;
 				else
 					oneOverRadiusDiff = 1.0f / ( radius1 - radius0 );
 			}
 			
-			cloudsMaterial.SetVector( "_SampleRadii", new Vector4( radius0, oneOverRadiusDiff, 0, 0 ) );
+			cloudsMaterial.SetVector( "_ScaleRadii", new Vector4( radius0, radius1, oneOverRadiusDiff, 0f ) );
 		}
 		
 		

@@ -70,8 +70,9 @@ Shader "Custom/Clouds Flatland" {
 	uniform float _DistMax = 128.0;
 	
 	// x is near dist
-	// y is 1/(far dist - near dist)
-	uniform float2 _ScaleRadii = float2(10.,0.);
+	// y is far dist
+	// z is 1/(far dist - near dist)
+	uniform float3 _ScaleRadii = float3(10.,64.,1./54.);
 	
 	uniform float _ForwardPinScale = 1.0;
 	
@@ -230,7 +231,7 @@ Shader "Custom/Clouds Flatland" {
 	    {
 	        if( sum.a > 0.99 ) continue;
 
-			float scaleAlpha = clamp( (t*_ForwardPinScale - _ScaleRadii.x)*_ScaleRadii.y, 0.0, 1.0 );
+			float scaleAlpha = clamp( (t*_ForwardPinScale - _ScaleRadii.x)*_ScaleRadii.z, 0.0, 1.0 );
 			float r = lerp( rValues.x, rValues.y, scaleAlpha );
 			
 	        float3 pos = ro + t*rd*r;
