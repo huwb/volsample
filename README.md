@@ -96,7 +96,7 @@ There are many directions for improving this work..
   It would be more efficient to upload the raymarch sample distances and weights to a texture and read them from there.
 
 
-**3D Advection - *Clouds3DAdvection.unity* **
+**3D Advection - Clouds3DAdvection.unity**
 
 * Gradient relaxation - how best to implement this for the GPU advection?
 * Script execution order is generally ad hoc. The code currently reads data from the scales texture before it is updated.
@@ -104,7 +104,7 @@ There are many directions for improving this work..
   I believe that the code should call `Camera.Render()` to make sure the scale values are set before reading them.
 
 
-**Flatland Advection - *CloudsFlatlandAdvection.unity* **
+**Flatland Advection - CloudsFlatlandAdvection.unity**
 
 * Gradient relaxation is a little complicated at the moment, doing multiple passes in different directions from different starting points. I believe with experimentation this could be simplified. Also, it currently doesn't always work well enough - you can sometimes still see pinching. We may want to define a maximum gradient that is never exceeded (a hard limit instead of the current soft process).
 * By freezing the advection (`debugFreezeAdvection`) and strafing the camera a lot, it can be seen that the solution from FPI starts to break down. In general this happens when the absolute gradient of the iterate approaches one [2]. This could be computed analytically and could provide a robust teleport/clear condition (instead of the current ad hoc threshold).
