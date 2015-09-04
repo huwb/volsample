@@ -30,8 +30,6 @@ SOFTWARE.
 
 Shader "Custom/Clouds Flatland" {
 	Properties {
-		// for some reason i need this, otherwise the render appears upside down?
-		_MainTex ("Base (RGB)", 2D) = "" {}
 	}
 	
 	CGINCLUDE
@@ -47,11 +45,10 @@ Shader "Custom/Clouds Flatland" {
 	
 	struct v2fd {
 		float4 pos : SV_POSITION;
-		float2 uv[2] : TEXCOORD0;
+		float2 uv : TEXCOORD0;
 	};
 	
 	sampler2D _MainTex;
-	uniform float4 _MainTex_TexelSize;
 
 	sampler2D _RValuesTex;
 	uniform float2 _ScalesTexTexelCenters = float2(0.5/32.0, 31.5/32.0);
@@ -87,17 +84,11 @@ Shader "Custom/Clouds Flatland" {
 	v2fd vert( appdata_img v )
 	{
 		v2fd o;
+		
 		o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
 		
-		float2 uv = v.texcoord.xy;
-		o.uv[0] = uv;
-		
-		#if UNITY_UV_STARTS_AT_TOP
-		if (_MainTex_TexelSize.y < 0)
-			uv.y = 1-uv.y;
-		#endif
-		
-		o.uv[1] = uv;
+		o.uv = v.texcoord.xy;
+		o.uv.y = 1.0 - o.uv.y;
 		
 		return o;
 	}
@@ -294,13 +285,10 @@ Shader "Custom/Clouds Flatland" {
 	
 	float4 frag(v2fd i) : SV_Target 
 	{	
-		//float centerDepth = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv[1]));
-		//float2 uvDist = _SampleDistance * _MainTex_TexelSize.xy;
+		//float centerDepth = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv));
 		
 		float3 camUp = cross( _CamForward.xyz, _CamRight.xyz );
-		
-		float2 q = i.uv[1];
-		
+		float2 q = i.uv;
 		float2 p = 2.0*(q - 0.5);
 		
     	float fovH = tan(_HalfFov);
@@ -319,13 +307,9 @@ Shader "Custom/Clouds Flatland" {
 		col = lerp( col, res.xyz, res.w );
 	    
 	    
-	    
 	    // post process
 		col = clamp(col, 0., 1.);
-		col = smoothstep(0.,1.,col);
-		//   col = col*0.5 + 0.5*col*col*(3.0-2.0*col); //saturation
-		//  col = pow(col, vec3(0.416667))*1.055 - 0.055; //sRGB
-		
+		col = smoothstep(0.,1.,col); //Contrast
 		col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); //Vign
 	    
 	    return float4( col, 1.0 );

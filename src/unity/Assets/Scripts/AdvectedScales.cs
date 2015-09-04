@@ -8,4 +8,9 @@ public class AdvectedScales : MonoBehaviour
 	
 	[Tooltip("The radius of this sample slice. Advection is performed at this radius")]
 	public float m_radius = 10.0f;
+
+	public virtual float MiddleScaleValue
+	{
+		get { return m_radius; }
+	}
 }

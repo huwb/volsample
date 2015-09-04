@@ -30,7 +30,6 @@ SOFTWARE.
 
 Shader "Custom/Clouds 3D" {
 	Properties {
-		_MainTex ("Base (RGB)", 2D) = "" {}
 	}
 	
 	CGINCLUDE
@@ -46,18 +45,14 @@ Shader "Custom/Clouds 3D" {
 	
 	struct v2fd {
 		float4 pos : SV_POSITION;
-		float2 uv[2] : TEXCOORD0;
+		float2 uv  : TEXCOORD0;
 	};
 	
 	sampler2D _MainTex;
-	uniform float4 _MainTex_TexelSize;
 
 	sampler2D _ScaleValsTex0;
 	sampler2D _ScaleValsTex1;
 
-	sampler2D _CameraDepthNormalsTexture;
-	sampler2D_float _CameraDepthTexture;
-	
 	sampler2D _NoiseTex;
 	
 	uniform float _ForwardIntegrator = 0.0;
@@ -88,15 +83,8 @@ Shader "Custom/Clouds 3D" {
 		v2fd o;
 		o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
 		
-		float2 uv = v.texcoord.xy;
-		o.uv[0] = uv;
-		
-		#if UNITY_UV_STARTS_AT_TOP
-		if (_MainTex_TexelSize.y < 0)
-			uv.y = 1-uv.y;
-		#endif
-		
-		o.uv[1] = uv;
+		o.uv = v.texcoord.xy;
+		o.uv.y = 1.0 - o.uv.y;
 		
 		return o;
 	}
@@ -295,15 +283,15 @@ Shader "Custom/Clouds 3D" {
 	{	
 		float3 camUp = cross( _CamForward.xyz, _CamRight.xyz );
 		
-		float2 q = i.uv[1];
+		float2 q = i.uv;
 		float2 p = 2.0*(q - 0.5);
 		
     	float fovH = tan(_HalfFov);
     	float fovV = tan(_HalfFov * _ScreenParams.y/_ScreenParams.x);
 		float3 rd = normalize(_CamForward.xyz + p.y * fovV * camUp + p.x * fovH * _CamRight.xyz);
 		
-		rValues.x = tex2Dlod( _ScaleValsTex0, float4( i.uv[1], 0.0, 0.0 ) ).x;
-		rValues.y = tex2Dlod( _ScaleValsTex1, float4( i.uv[1], 0.0, 0.0 ) ).x;
+		rValues.x = tex2Dlod( _ScaleValsTex0, float4( i.uv, 0.0, 0.0 ) ).x;
+		rValues.y = tex2Dlod( _ScaleValsTex1, float4( i.uv, 0.0, 0.0 ) ).x;
 		rValues /= _ScaleRadii;
 		
 		// visualise scales

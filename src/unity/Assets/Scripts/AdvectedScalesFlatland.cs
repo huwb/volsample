@@ -333,6 +333,11 @@ public class AdvectedScalesFlatland : AdvectedScales
 		return result;
 	}
 
+	public override float MiddleScaleValue {
+		get {
+			return sampleR(Mathf.PI/2.0f);
+		}
+	}
 
 	// this assumes that sampleR, lastPos, etc all return values from the PREVIOUS frame!
 	Vector3 ComputePos0_world( float theta )
