@@ -21,7 +21,9 @@ There are aspects of these that are far from perfect - see notes below. We'd lov
 
 This is implemented as a Unity 5 project and should "just work" without requiring any set up steps. This is a very convenient framework for doing this research. It provides the tweaking UI for free and affords very fast iteration.
 
-Upon opening scene Clouds in the project, you should immediately be able to move the camera around in the editor and see the effect on the render. If you play the project, the Animator component on the camera will play our test animation.
+Since publishing the Advances course [1], there is now a new implementation that supports full 3D rotations (not constrained to the flatland case). This is in the scene *Clouds3DAdvection.unity*. For the published flatland version of the algorithm, see *CloudsFlatlandAdvection.unity*.
+
+For both scenes, once you open them you should immediately be able to move the camera around in the editor and see the effect on the advection. If you play the project, the Animator component on the camera will play our test animation if it is enabled.
 
 There are a few small gotchas that can arise - see the Troubleshooting section below.
 
@@ -34,66 +36,77 @@ Most of the work is performed by scripts on the *Main Camera* game object.
 
 This is the first part of the presentation and involves shifting the samples to compensate for camera forward motion. The forward motion is integrated in the variable `m_distTravelledForward` in *CloudsBase.cs*. Note that since the rays are scaled, this has to be taken into account when offsetting the ray steps, so the integration code takes this into account.
 
-This is then passed into the clouds shader in *CloudsRayScales.cs*, which then shifts the raymarch step position.
+This is then passed into the clouds shader by *CloudsRayScales.cs*, which then shifts the raymarch step position.
 
 ### General Pinning
 
-The core of this is an advection process used to keep sample slices stationary. The two sample slices are drawn in the Editor view if `AdvectedScalesSettings.debugDrawAdvection` is true, so you can verify that they are stationary. These debug draws do not use Forward Pinning, so they will only appear stationary if you rotate and strafe the camera only.
+The core of this is an advection process used to keep sample slices stationary. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves.
 
-The advection is implemented in *AdvectedScales.cs*. See the inline code comments for details. The general idea is that that both sample slices are kept as close to stationary as possible when the camera moves. We know how the camera has moved each frame, and therefore can work out the new angle for each sample slice point.
+
+#### GPU-based advection
+
+Instead of performing the advection manually using FPI, as published in the Advances talk, I found an easier path which is to simply render the sample slice into the current frame camera view, writing each pixel depth into the new scale texture. This will maintain the sample slice position across frames and extends trivially to full 3D transforms.
+
+This is implemented in the scene *Clouds3DAdvection.unity*. The near and far sample slice geometry are drawn in the Scene view.
+
 
 #### Fixed Point Iteration Advection
 
 The initial published algorithm used Fixed Point Iteration (FPI) to advect the scales - for a particular angle in the final camera position (depending on which ray scale we are updating), it will provide an angle to a point on the sample slice which can then be used to compute a new scale. See [2] for more information about FPI applied to related problems.
 
-The sample slice is extended as required in an elegant way. Linear extensions are added to the sample slice based on the camera motion, and this extended slice is the one that FPI iterates over.
+This is implemented in the scene *CloudsFlatlandAdvection.unity*.
+
+The two sample slices are drawn in the Editor view if `AdvectedScalesSettings.debugDrawAdvection` is true, so you can verify that they are stationary. These debug draws do not use Forward Pinning, so they will only appear stationary if you rotate and strafe the camera only.
+
+The sample slice is extended as follows. Linear extensions are added to the sample slice based on the camera motion, and this extended slice is the one that FPI iterates over.
 This means that the solution from FPI is good to go without any further treatment.
 To see this set `debugFreezeAdvection` to true and then rotate the camera, to see how the slice is extended.
+This works nicely for 1D scales (flatland) but difficult to implement for 2D scales (full 3D rotations).
 
-It seems Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.
-
-This algorithm at least partially generalises to advection of 2D sample slices, to support full 3D rotations.
-There is a test pushed *AdvectedScales2D.cs* - add this script to the camera to see a proof of concept for the basic advection without the linear extensions (debug drawing only for now).
-However I got stuck trying to implement the slice extensions in 2D which feels like a hard problem.
-
-
-#### GPU-based advection
-
-Instead of performing the advection manually using FPI, I found an easier path.
-Simply render the previous frame sample slice into the current frame camera view, writing each pixel depth into the new scale texture. 
-
-I have what I believe is a solid proof of concept - see the scene RasteriseScales2D (you must play the scene to see it).
-You should see a 2D sample slice that is more or less stationary when you move the camera (except for forward motion - as before, this component of the motion is compensated using Forward Pinning).
-I haven't hooked it up to a raymarcher yet.
+~~It seems Unity doesn't support uploading floats to FP32 textures, so the ray scales are written onto geometry which is then rendered into a floating point texture. See *UploadRayScales.cs*. I couldn't easily get it to work with a N x 1 texture, so I'm using a N x N texture instead.~~ **WRONG** - it is possible if the type is Float ARGB. It might be useful to go back and upload the ray scales directly.
 
 
 ### Adaptive Sampling
 
-The sample layout overlay (white lines on top of render) is generated by *DiagramOverlay.cs*. This script contains a C# implementation of our adaptive sampling algorithm, described in our publication and illustrated [here](https://www.shadertoy.com/view/llXSD7 "Adaptive Sampling Diagram"). If you have the *Draw* and *Adaptive* options selected on this script, you should see it in action in the overlay.
+The sample layout overlay (white lines on top of render) is generated by *DiagramOverlay.cs*. Note this is currently only implemented for the flatland scene - *CloudsFlatlandAdvection.unity*. 
+This script contains a C# implementation of our adaptive sampling algorithm, described in our publication and illustrated [here](https://www.shadertoy.com/view/llXSD7 "Adaptive Sampling Diagram").
+If you have the *Draw* and *Adaptive* options selected on this script, you should see it in action in the overlay.
 
-Unfortunately Unity doesn't support passing arrays into shaders. For now we just compute the adaptive sampling directly in shader. It would be more efficient to upload these to a texture and read them from there, but like the ray scales this would probably have to be done through geometry and I haven't tried this. We could probably pack these into a non-FP32 texture format instead.
+Unfortunately Unity doesn't support passing arrays into shaders. For now we just compute the adaptive sampling directly in shader. It would be more efficient to upload these to a texture and read them from there.
 
 
 ## Troubleshooting
 
 You may run into the following:
 
-* If you see just the standard sky box render in the camera view, re-enable the *CloudsRayScales* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try reopening Unity.
+* If you see just the standard sky box render in the camera view, re-enable the *CloudsRayScales3D* or *CloudsRayScalesFlatland* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try reopening Unity.
 * You may notice the sample layout changes shape slightly when the camera moves forwards/backwards. This is actually by design and is happening in the advection code (if `advectionCompensatesForwardPin` is true), and compensates for the non-trivial motion of samples when we forward pin them. Look for comments around this variable and usages of the variable in the code.
 
 
 ## Bugs and improvement directions
 
-There are many directions for improving this work
+There are many directions for improving this work..
+
+**General**
+
+* The render breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
+* The ray scale clamping works well most of the time but when transitioning straight from a strafing layout to a rotating layout, some of the ray scales get clamped and is causing some aliasing.
+  I'm not sure if this is a bug or a limitation of the current clamping scheme.
+* The adaptive sampling distances and weights are currently dynamically computed in the render shaders.
+  It would be more efficient to upload the raymarch sample distances and weights to a texture and read them from there.
+
+
+**3D Advection - *Clouds3DAdvection.unity* **
+
+* Gradient relaxation - how best to implement this for the GPU advection?
+* Script execution order is generally ad hoc. The code currently reads data from the scales texture before it is updated.
+  This is causing frequent pipeline stalls (see the large times in the Profiler window).
+  I believe that the code should call `Camera.Render()` to make sure the scale values are set before reading them.
+
+
+**Flatland Advection - *CloudsFlatlandAdvection.unity* **
 
 * Gradient relaxation is a little complicated at the moment, doing multiple passes in different directions from different starting points. I believe with experimentation this could be simplified. Also, it currently doesn't always work well enough - you can sometimes still see pinching. We may want to define a maximum gradient that is never exceeded (a hard limit instead of the current soft process).
-* Generalisation from flatland 2D to full 3D motions.
-  ~~I have implemented a proof of concept for the basic advection (see notes above), but the linear extensions are not figured out yet, so new scales are inappropriate.~~
-  ~~The gradient relaxation may need a bit of thinking to generalise, and might need to be a GPU process.~~
-  I have a proof of concept running for GPU-based scale advection supporting full 3D transforms - see General Pinning section above.
-* The ray scale clamping works well most of the time but when transitioning straight from a strafing layout to a rotating layout, some of the ray scales get clamped and is causing some aliasing. I'm not sure if this is a bug or a limitation of the current clamping scheme.
-* The adaptive sampling distances and weights are currently dynamically computed in *Clouds.shader*. It would be more efficient to pass them in to the shader - see notes above.
-* The render generally breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
 * By freezing the advection (`debugFreezeAdvection`) and strafing the camera a lot, it can be seen that the solution from FPI starts to break down. In general this happens when the absolute gradient of the iterate approaches one [2]. This could be computed analytically and could provide a robust teleport/clear condition (instead of the current ad hoc threshold).
 
 
