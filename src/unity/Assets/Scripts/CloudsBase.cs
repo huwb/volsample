@@ -67,7 +67,14 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 				// need to know how fast samples will move forwards/backwards under pinning, so that we can hold them stationary.
 				// we take the middle scale. this is assumed in the advection code as well, and the advection will then compensate
 				// for non-uniform scale for different rays.
-				m_forwardPinScale = rVals.sampleR(Mathf.PI/2.0f)/rVals.radius;
+				float centerScale = 1f;
+				// TODO this doesn't work for the GPU based full 3D advection, because i can't read back the scale value from the texture..
+				if( rVals is AdvectedScalesFlatland )
+				{
+					centerScale = (rVals as AdvectedScalesFlatland).sampleR(Mathf.PI/2.0f)/rVals.m_radius;
+				}
+
+				m_forwardPinScale = centerScale;
 
 				m_distTravelledForward += Vector3.Dot( transform.position - lastPos, transform.forward ) / m_forwardPinScale;
 				

@@ -75,6 +75,8 @@ public class CloudsRayScales : CloudsBase
 		float radius1 = 64f;
 		float oneOverRadiusDiff = 1f/54f;
 		AdvectedScales[] ars = GetComponents<AdvectedScales>();
+		if( ars.Length == 0 )
+			ars = GetComponentsInChildren<AdvectedScales>();
 		if( ars.Length > 0 )
 		{
 			if( ars.Length == 1 )

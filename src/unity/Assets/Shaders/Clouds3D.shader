@@ -52,8 +52,8 @@ Shader "Custom/Clouds 3D" {
 	sampler2D _MainTex;
 	uniform float4 _MainTex_TexelSize;
 
-	sampler2D _RayScalesTex0;
-	sampler2D _RayScalesTex1;
+	sampler2D _ScaleValsTex0;
+	sampler2D _ScaleValsTex1;
 
 	sampler2D _CameraDepthNormalsTexture;
 	sampler2D_float _CameraDepthTexture;
@@ -302,10 +302,12 @@ Shader "Custom/Clouds 3D" {
     	float fovV = tan(_HalfFov * _ScreenParams.y/_ScreenParams.x);
 		float3 rd = normalize(_CamForward.xyz + p.y * fovV * camUp + p.x * fovH * _CamRight.xyz);
 		
-		rValues.x = tex2Dlod( _RayScalesTex0, float4( i.uv[1], 0.0, 0.0 ) ).x;
-		rValues.y = tex2Dlod( _RayScalesTex1, float4( i.uv[1], 0.0, 0.0 ) ).x;
-		rValues.x /= _ScaleRadii.x;
-		rValues.y /= _ScaleRadii.y;
+		rValues.x = tex2Dlod( _ScaleValsTex0, float4( i.uv[1], 0.0, 0.0 ) ).x;
+		rValues.y = tex2Dlod( _ScaleValsTex1, float4( i.uv[1], 0.0, 0.0 ) ).x;
+		rValues /= _ScaleRadii;
+		
+		// visualise scales
+		//return float4(smoothstep(.8,1.1,rValues).x,0.,0.,1.);
 		
     	float4 res = raymarch( _CamPos, rd );
     	

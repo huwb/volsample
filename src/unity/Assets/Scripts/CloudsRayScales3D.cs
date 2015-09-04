@@ -27,14 +27,14 @@ using UnityEngine;
 
 public class CloudsRayScales3D : CloudsRayScales
 {
-	public Texture scaleValuesTexture0;
-	public Texture scaleValuesTexture1;
-
 	protected override void RenderSetupInternal ()
 	{
 		base.RenderSetupInternal();
 
-		cloudsMaterial.SetTexture( "_ScaleValsTex0", scaleValuesTexture0 );
-		cloudsMaterial.SetTexture( "_ScaleValsTex1", scaleValuesTexture1 );
+		AdvectedScales3D[] advs = GetComponentsInChildren<AdvectedScales3D>();
+		foreach( AdvectedScales3D adv in advs )
+		{
+			cloudsMaterial.SetTexture( "_ScaleValsTex" + adv.m_radiusIndex, adv.m_currentTarget );
+		}
 	}
 }

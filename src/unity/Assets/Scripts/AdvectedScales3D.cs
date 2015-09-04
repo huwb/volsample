@@ -30,7 +30,9 @@ public class AdvectedScales3D : AdvectedScales
 {
 	public RenderTexture m_scalesTex0;
 	public RenderTexture m_scalesTex1;
-	RenderTexture m_currentTarget;
+
+	[HideInInspector]
+	public RenderTexture m_currentTarget;
 
 	Material m_material = null;
 

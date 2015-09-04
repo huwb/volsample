@@ -22,20 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// this shader will render the sample slice (ray scales) at the last camera position.
-// this will hopefully replace the advection procedure, which worked for 2D scales but
-// made extending the sample slice difficult.
+// this shader renders the sample slice (ray scales) at the last camera position.
+// this replaces the advection procedure, the core of which worked for 2D scales but
+// extending the sample slice was difficult.
 
 // the geometry is a grid with a vert at every texel of the scale texture, and with an
-// extra ring of verts around the outside which will form the extension. the inner verts
-// will be place at where the sample slice was, based on the previous camera transform
-// which is passed into the shader. on the other hand, the outer ring will be rendered
+// extra ring of verts around the outside which form the extension. the inner verts
+// are placed at where the sample slice was, based on the previous camera transform
+// which is passed into the shader. on the other hand, the outer ring is rendered
 // at the edges of the transformed camera - this will extend the sample slice as required.
-// the scale value used for the extension will interpolate from the scale at the border
+// the scale value used for the extension interpolates from the scale at the border
 // of the sample slice, to the ideal scale, based on the length of the extension (similar
 // to how it is done for 1D scales extension in AdvectedScales.cs).
-
-// right now it is a work in progress/broken.
 
 Shader "Custom/RenderScales2D" {
 	Properties {
