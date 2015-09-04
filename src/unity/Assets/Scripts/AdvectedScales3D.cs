@@ -111,4 +111,34 @@ public class AdvectedScales3D : AdvectedScales
 	{
 		m_material.SetVector( name, new Vector4( v.x, v.y, v.z, 1f ) );
 	}
+
+	public override float MiddleScaleValue {
+		get {
+			if( m_currentTarget == null )
+				return m_radius;
+
+			int w = m_currentTarget.width, h = m_currentTarget.height;
+
+			// new temporary texture to read pixels
+			Texture2D tex = new Texture2D( w, h, TextureFormat.RGBAFloat, false );
+
+			// copy render target contents
+			RenderTexture.active = m_currentTarget;
+			tex.ReadPixels( new Rect( 0, 0, w, h ), 0, 0 );
+			RenderTexture.active = null;
+
+			// readback on cpu
+			Color result = tex.GetPixelBilinear( 0.5f, 0.5f );
+
+			// finished with texture
+			DestroyImmediate( tex );
+
+			// if scale is outside 10% to 200% of default value, return default
+			float scale = result.r;
+			if( scale < 0.1f * m_radius || scale > 2f * m_radius )
+				scale = m_radius;
+
+			return scale;
+		}
+	}
 }
