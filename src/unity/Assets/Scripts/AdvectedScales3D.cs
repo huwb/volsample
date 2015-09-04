@@ -69,10 +69,11 @@ public class AdvectedScales3D : AdvectedScales
 		SetVector( "_CamUp", transform.up );
 		SetVector( "_CamRight", transform.right );
 
-		// i verified these are correct, at least for the render texture.
 		Camera cam = GetComponent<Camera>();
 		float halfFovVert = 0.5f * cam.fieldOfView * Mathf.Deg2Rad;
-		float halfFovHorz = halfFovVert * (float)cam.targetTexture.width/(float)cam.targetTexture.height;
+
+		float radAngle = cam.fieldOfView * Mathf.Deg2Rad;
+		float halfFovHorz = Mathf.Atan(Mathf.Tan(radAngle / 2) * cam.aspect);
 		m_material.SetVector( "_HalfFov", new Vector4( halfFovHorz, halfFovVert, 0f, 0f ) );
 
 		cam.targetTexture = m_currentTarget;

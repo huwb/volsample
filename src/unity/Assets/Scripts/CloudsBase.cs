@@ -53,6 +53,8 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 			// be the average radius, i dont recall if i tried this.
 			
 			AdvectedScales[] ars = GetComponents<AdvectedScales>();
+			if( ars.Length == 0 )
+				ars = GetComponentsInChildren<AdvectedScales>();
 			AdvectedScales rVals = null;
 			for (int i = 0; i < ars.Length; i++) {
 				if( ars[i].m_radiusIndex == 0 )

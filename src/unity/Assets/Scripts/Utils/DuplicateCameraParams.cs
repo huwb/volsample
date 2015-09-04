@@ -41,5 +41,10 @@ public class DuplicateCameraParams : MonoBehaviour
 		Camera thisCam = GetComponent<Camera>();
 		thisCam.fieldOfView = m_otherCamera.fieldOfView;
 		thisCam.orthographic = m_otherCamera.orthographic;
+		thisCam.aspect = m_otherCamera.aspect;
+
+		transform.localPosition = Vector3.zero;
+		transform.localRotation = Quaternion.identity;
+		transform.localScale = Vector3.one;
 	}
 }

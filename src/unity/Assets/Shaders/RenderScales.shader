@@ -70,7 +70,8 @@ Shader "Custom/RenderScales2D" {
 	struct v2fd
 	{
 		float4 pos  : SV_POSITION;
-		float2 dist_angleFromCenter : TEXCOORD0;
+		float angleFromCenter : TEXCOORD0;
+		float3 posWorld : TEXCOORD1;
 	};
 	
 	v2fd vert( appdata_img v )
@@ -81,6 +82,7 @@ Shader "Custom/RenderScales2D" {
 	    d.z = 1.0;
 	    d.xy = (v.texcoord*2.0 - 1.0) * tan(_HalfFov) * d.z;
 	    d = normalize(d);
+		o.angleFromCenter = acos( d.z );
 	    
 	    float scale = tex2Dlod( _PrevScalesTex, float4( v.texcoord, 0.0, 0.0 ) ).x;
 
@@ -98,18 +100,16 @@ Shader "Custom/RenderScales2D" {
 	    if( !extensionVert )
 	    {
 			o.pos = mul( UNITY_MATRIX_VP, float4(pos_slice_world, 1.) );
-			o.dist_angleFromCenter.x = length(pos_slice_world - _CamPos);
+			o.posWorld = pos_slice_world;
 	    }
 	    else
 	    {
 		    float3 d_cam = d.x * _CamRight + d.y * _CamUp + d.z * _CamForward;
-	    	float3 posWorld = _CamPos + scale * d_cam;
-	    	o.pos = mul( UNITY_MATRIX_VP, float4(posWorld, 1.) );
-	    	o.dist_angleFromCenter.x = lerp( scale, _CannonicalScale, min(1., _ScaleReturnAlpha * length(posWorld - pos_slice_world)) );
-	    	o.pos = mul( UNITY_MATRIX_VP, float4(_CamPos + d_cam*o.dist_angleFromCenter.x, 1.) );
+	    	o.posWorld = _CamPos + scale * d_cam;
+	    	scale = lerp( scale, _CannonicalScale, min(1., _ScaleReturnAlpha * length(o.posWorld - pos_slice_world)) );
+	    	o.posWorld = _CamPos + scale * d_cam;
+	    	o.pos = mul( UNITY_MATRIX_VP, float4(o.posWorld, 1.) );
 	    }
-		
-		o.dist_angleFromCenter.y = acos( d.z );
 		
 		return o;
 	}
@@ -117,11 +117,11 @@ Shader "Custom/RenderScales2D" {
 	float4 frag(v2fd i) : SV_Target 
 	{
 		// max: the fixed z line at the highest point of the circle. this allows strafing after rotating without aliasing
-		float maxScale = _CannonicalScale / cos( i.dist_angleFromCenter.y );
+		float maxScale = _CannonicalScale / cos( i.angleFromCenter );
 		// min: 90% of the fixed z line
-		float minScale = 0.9*_CannonicalScale * cos(length(_HalfFov)) / cos( i.dist_angleFromCenter.y );
+		float minScale = 0.9*_CannonicalScale * cos(length(_HalfFov)) / cos( i.angleFromCenter );
 		
-		return (float4) clamp( i.dist_angleFromCenter.x, minScale, maxScale );
+		return (float4) clamp( length( i.posWorld - _CamPos ), minScale, maxScale );
 	}
 	
 	ENDCG 
