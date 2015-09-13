@@ -45,7 +45,7 @@ The core of this is an advection process used to keep sample slices stationary. 
 
 #### GPU-based advection
 
-Instead of performing the advection manually using FPI, as published in the Advances talk, I found an easier path which is to simply render the sample slice into the current frame camera view, writing each pixel depth into the new scale texture. This will maintain the sample slice position across frames and extends trivially to full 3D transforms.
+Instead of performing the advection manually using FPI, as published in the Advances talk, I found an easier path which is to simply render the sample slice into the current frame camera view, writing each pixel depth into the new scale texture, using the shader *RenderScales.shader*. This will maintain the sample slice position across frames and extends trivially to full 3D transforms. To extend the slices, the boundary is connected with the edges of the new camera viw. Depth buffering and backface culling ensure that the correct scales are written.
 
 This is implemented in the scene *Clouds3DAdvection.unity*. The near and far sample slice geometry are drawn in the Scene view. Note that forward pinning is performed separately from the ray scaling, so the slices move in the forward direction.
 

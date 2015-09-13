@@ -4,8 +4,52 @@ using System.Collections;
 [ExecuteInEditMode]
 public class L0_Isolines : MonoBehaviour
 {
-	void Start () {
-	
+	public bool lockLines = false;
+	public bool diagOnly = true;
+
+	float mposX, mposZ;
+
+	void Start()
+	{
+		float posX = transform.position.x;
+		float fracX = Mathf.Repeat( posX, 1f );
+		posX -= fracX;
+		
+		float posZ = transform.position.z;
+		float fracZ = Mathf.Repeat( posZ, 1f );
+		posZ -= fracZ;
+	}
+
+	void computePosition2()
+	{
+		float posX = transform.position.x;
+		float fracX = Mathf.Repeat( posX, 1f );
+		posX -= fracX;
+		
+		float posZ = transform.position.z;
+		float fracZ = Mathf.Repeat( posZ, 1f );
+		posZ -= fracZ;
+
+		// if corners not visible, just move
+		if( Mathf.Max( Mathf.Abs(transform.forward.x), Mathf.Abs(transform.forward.z) ) > 0.95f )
+		{
+			mposX = posX;
+			mposZ = posZ;
+		}
+		else
+		{
+			Vector3 moveDir = new Vector3( Mathf.Sign( transform.forward.x ), 0f, Mathf.Sign( transform.forward.z ) );
+
+			Vector3 curPos = new Vector3( mposX, 0f, mposZ );
+			Vector3 desPos = new Vector3(  posX, 0f,  posZ );
+
+			float dot = Vector3.Dot( desPos - curPos, moveDir.normalized );
+			if( Mathf.Abs(dot) > 1f/Mathf.Sqrt(2f) )
+			{
+				mposX += moveDir.x * Mathf.Sign( dot );
+				mposZ += moveDir.z * Mathf.Sign( dot );
+			}
+		}
 	}
 
 	float weightKernel( float x, float z )
@@ -15,17 +59,15 @@ public class L0_Isolines : MonoBehaviour
 
 	void Update()
 	{
-		float posX = transform.position.x;
-		float fracX = Mathf.Repeat( posX, 1f );
-		posX -= fracX;
-		float posZ = transform.position.z;
-		float fracZ = Mathf.Repeat( posZ, 1f );
-		posZ -= fracZ;
+		if( !lockLines )
+			computePosition2();
 
-		DrawStructure( weightKernel( -fracX, -fracZ ), posX, posZ );
-		DrawStructure( weightKernel( 1f-fracX, -fracZ ), posX+1f, posZ );
-		DrawStructure( weightKernel( -fracX, 1f-fracZ ), posX, posZ+1f );
-		DrawStructure( weightKernel( 1f-fracX, 1f-fracZ ), posX+1f, posZ+1f );
+		DrawStructure( 1f, mposX, mposZ );
+
+		//DrawStructure( weightKernel( -fracX, -fracZ ), posX, posZ );
+		//DrawStructure( weightKernel( 1f-fracX, -fracZ ), posX+1f, posZ );
+		//DrawStructure( weightKernel( -fracX, 1f-fracZ ), posX, posZ+1f );
+		//DrawStructure( weightKernel( 1f-fracX, 1f-fracZ ), posX+1f, posZ+1f );
 
 		/*
 		float cx = posX + 0.5f;
@@ -60,7 +102,7 @@ public class L0_Isolines : MonoBehaviour
 
 	void DrawStructure(float alpha, float posX, float posZ )
 	{
-		for( float i = 1f; i < 10f; i++ )
+		for( float i = 1f; i < 20f; i++ )
 		{
 			//Debug.DrawLine( new Vector3( posX-i, 0f, posZ+i ), new Vector3( posX-(i-1f), 0f, posZ+i ), new Color(1f,0f,0f,alpha) );
 			Debug.DrawLine( new Vector3( posX-i, 0f, posZ+i ), new Vector3( posX+i, 0f, posZ+i ), new Color(1f,1f,1f,alpha) );
