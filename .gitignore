@@ -3,3 +3,4 @@ src/unity/Temp
 src/unity/*.csproj
 src/unity/*.sln
 src/unity/*.userprefs
+src/unity/.vs
