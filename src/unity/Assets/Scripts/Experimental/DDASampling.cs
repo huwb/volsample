@@ -4,15 +4,17 @@ using System.Collections.Generic;
 [ExecuteInEditMode]
 public class DDASampling : MonoBehaviour
 {
+    struct Sample
+    {
+        public Vector3 pos;
+        public float alpha;
+    }
+
 	public int samplesPerSliceDir = 20;
 	public float rayCount = 20f;
 	public float fovMult = 0.2f;
 	public bool l1Sampling = false;
 
-	void Start () {
-	
-	}
-	
 	void Update()
 	{
 		for( float i = 0f; i < rayCount; i += 1f )
@@ -26,16 +28,16 @@ public class DDASampling : MonoBehaviour
 
 	void SampleRay( Vector3 ro, Vector3 rd )
 	{
-		List< Vector3 > samples = new List<Vector3>();
+		List<Sample> samples = new List<Sample>();
 
 		SampleSlices( ro, rd, Vector3.right, samples );
 		SampleSlices( ro, rd, Vector3.forward, samples );
 
-		foreach( Vector3 s in samples )
+		foreach( var s in samples )
 			DrawSample( s );
 	}
 
-	void SampleSlices( Vector3 ro, Vector3 rd, Vector3 n, List< Vector3 > samples )
+	void SampleSlices( Vector3 ro, Vector3 rd, Vector3 n, List<Sample> samples )
 	{
 		float dpDir = Vector3.Dot( rd, n );
 		if( Mathf.Abs( dpDir ) > Mathf.Epsilon )
@@ -50,17 +52,29 @@ public class DDASampling : MonoBehaviour
 				bool takeIt = !l1Sampling || Mathf.Abs(dpDir) > 1f/Mathf.Sqrt(2f);
 
 				if( takeIt )
-					samples.Add( roX + rd * t );
+                {
+                    Sample smp;
+                    smp.pos = roX + rd * t;
+                    smp.alpha = Mathf.Abs( Vector3.Dot( rd, n ) );
+                    float bp = 0.6f;
+                    smp.alpha = Mathf.Clamp01( (smp.alpha - bp) / (1f - bp) );
+                    //smp.alpha *= smp.alpha*smp.alpha;
+                    samples.Add( smp );
+                }
 
-				t += distPerX;
+                t += distPerX;
 			}
 		}
 	}
-	void DrawSample( Vector3 pos )
+
+	void DrawSample( Sample smp )
 	{
+        Vector3 pos = smp.pos;
+        Color c = new Color( 1f, 1f, 1f, smp.alpha );
+
 		float s = 0.2f;
-		Debug.DrawLine( pos - s*Vector3.forward, pos + s*Vector3.forward );
-		Debug.DrawLine( pos - s*Vector3.right, pos + s*Vector3.right );
-		Debug.DrawLine( pos - s*Vector3.up, pos + s*Vector3.up );
+		Debug.DrawLine( pos - s*Vector3.forward, pos + s*Vector3.forward, c );
+		Debug.DrawLine( pos - s*Vector3.right, pos + s*Vector3.right, c );
+		Debug.DrawLine( pos - s*Vector3.up, pos + s*Vector3.up, c );
 	}
 }

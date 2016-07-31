@@ -62,12 +62,20 @@ public class L0_Isolines : MonoBehaviour
 		if( !lockLines )
 			computePosition2();
 
-		DrawStructure( 1f, mposX, mposZ );
+		//DrawStructure( 1f, mposX, mposZ );
 
-		//DrawStructure( weightKernel( -fracX, -fracZ ), posX, posZ );
-		//DrawStructure( weightKernel( 1f-fracX, -fracZ ), posX+1f, posZ );
-		//DrawStructure( weightKernel( -fracX, 1f-fracZ ), posX, posZ+1f );
-		//DrawStructure( weightKernel( 1f-fracX, 1f-fracZ ), posX+1f, posZ+1f );
+		float posX = transform.position.x;
+		float fracX = Mathf.Repeat( posX, 1f );
+		posX -= fracX;
+		
+		float posZ = transform.position.z;
+		float fracZ = Mathf.Repeat( posZ, 1f );
+		posZ -= fracZ;
+
+		DrawStructure( weightKernel( -fracX, -fracZ ), posX, posZ );
+		DrawStructure( weightKernel( 1f-fracX, -fracZ ), posX+1f, posZ );
+		DrawStructure( weightKernel( -fracX, 1f-fracZ ), posX, posZ+1f );
+		DrawStructure( weightKernel( 1f-fracX, 1f-fracZ ), posX+1f, posZ+1f );
 
 		/*
 		float cx = posX + 0.5f;
