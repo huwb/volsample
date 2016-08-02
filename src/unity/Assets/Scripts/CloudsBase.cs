@@ -46,7 +46,7 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 	
 	void LateUpdate()
 	{
-		if( AdvectedScalesSettings.instance.integrateForwardsMotion )
+		if( AdvectedScalesSettings.instance != null && AdvectedScalesSettings.instance.integrateForwardsMotion )
 		{
 			// this is a little bit awkward. we need to compute dist travelled based on the ray (radius) scale, otherwise it is meaningless.
 			// however different rays have different scales. in this case we just pick the radius at the center. its possible that this could
@@ -130,4 +130,8 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 			return Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
 		}
 	}
+
+    protected virtual void RenderSetupInternal()
+    {
+    }
 }

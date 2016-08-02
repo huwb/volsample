@@ -37,8 +37,10 @@ public class CloudsRayScales : CloudsBase
 	[Range(1.0f,10.0f)] public float m_fadeSpeed = 1.0f;
 
 
-	protected virtual void RenderSetupInternal()
+	protected override void RenderSetupInternal()
 	{
+        base.RenderSetupInternal();
+
 		cloudsMaterial.SetFloat( "_ForwardIntegrator", m_distTravelledForward );
 		
 		Vector4 camPos = new Vector4( transform.position.x, transform.position.y, transform.position.z, 0.0f );
