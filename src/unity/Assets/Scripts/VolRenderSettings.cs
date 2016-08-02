@@ -1,7 +1,7 @@
-/*
+﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2015 Huw Bowles & Daniel Zimmermann
+Copyright (c) 2016 Huw Bowles & Daniel Zimmermann
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,54 +25,22 @@ SOFTWARE.
 using UnityEngine;
 
 [ExecuteInEditMode]
-[RequireComponent (typeof (Camera))]
-public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsBase
+public class VolRenderSettings : MonoBehaviour
 {
-	public Shader cloudsShader;
-	protected Material cloudsMaterial = null;
-	public Texture2D noiseTexture;
+    [Tooltip( "Slow down unity time" )]
+    [Range( 0.0001f, 1 )]
+    public float timeScale = 1.0f;
 
-	public override bool CheckResources()
+    static VolRenderSettings m_inst;
+	public static VolRenderSettings instance
 	{
-		CheckSupport( true );
-		
-		cloudsMaterial = CheckShaderAndCreateMaterial( cloudsShader, cloudsMaterial );
-		
-		SetCameraFlag();
-		
-		if( !isSupported )
-			ReportAutoDisable();
-
-		return isSupported;
-	}
-	
-	void OnEnable()
-	{
-		SetCameraFlag();
-	}
-	
-	void SetCameraFlag()
-	{
-		GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;
-	}
-	
-	public static float halfFov_horiz_rad
-	{
-		get
-		{
-			return Camera.main.aspect * Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
+		get {
+			return m_inst ? m_inst : ( m_inst = FindObjectOfType<VolRenderSettings>() );
 		}
 	}
 
-	public static float halfFov_vert_rad
+	void Update()
 	{
-		get
-		{
-			return Camera.main.fieldOfView * Mathf.Deg2Rad / 2.0f;
-		}
+		Time.timeScale = Mathf.Max(0.00001f, timeScale);
 	}
-
-    protected virtual void RenderSetupInternal()
-    {
-    }
 }
