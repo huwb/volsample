@@ -81,8 +81,6 @@ Shader "Custom/Clouds 3D Strat" {
 		// strata line normals
 		float3 n0 = abs( rd.x ) > abs( rd.z ) ? float3(1., 0., 0.) : float3(0., 0., 1.); // non diagonal
 		float3 n1 = float3(mysign( rd.x * rd.z ), 0., 1.); // diagonal
-		//n0 = float3(1., 0., 0.);
-		//n1 = float3(0., 0., 1.);
 
 		// normal lengths (used later)
 		float2 ln = float2(length( n0 ), length( n1 ));
@@ -102,8 +100,9 @@ Shader "Custom/Clouds 3D Strat" {
 
 		// raymarch start offset - skips leftover bit to get from ro to first strata lines
 		t = -mysign( ndotrd ) * fmod( ndotro, period ) / abs( ndotrd );
-		if( ndotrd.x > 0. ) t.x += dt.x;
-		if( ndotrd.y > 0. ) t.y += dt.y;
+		// the ifs seem to only be required on shadertoy, not sure why..
+		/*if( ndotrd.x > 0. )*/ t.x += dt.x;
+		/*if( ndotrd.y > 0. )*/ t.y += dt.y;
 
 		// sample weights
 		float minperiod = PERIOD;
@@ -127,32 +126,13 @@ Shader "Custom/Clouds 3D Strat" {
 	    {
 	        if( sum.a > 0.99 ) continue;
 
-			// dda-style thing - can do this (more) branchless?
-			//const float4 sampleState = t.x < t.y ? float4(dt.x, 0., t.x, wt.x) : float4(0., dt.y, t.y, wt.y); // ( dt, current t, wt )
-			//t += sampleState.xy;
-			//const float3 pos = ro + sampleState.z * rd;
-			//const float w = sampleState.w;
 
+			// data for next sample
+			const float4 data = t.x < t.y ? float4(t.x, wt.x, dt.x, 0.0) : float4(t.y, wt.y, 0.0, dt.y); // ( t, wt, dt )
+			const float3 pos = ro + data.x * rd;
+			const float w = data.y;
+			t += data.zw;
 
-			// dda style thing - can do this branchless?
-			float3 pos; float w;
-			if( (t.x < t.y /*|| straightOnly*/) /*&& !diagOnly*/ )
-			{
-				pos = ro + t.x * rd;
-				w = wt.x;
-				w *= dt.x;
-				if( t.x < 0. ) w *= 0.;
-				t.x += dt.x;
-			}
-			else
-			{
-				pos = ro + t.y * rd;
-				w = wt.y;
-				w *= dt.y;
-				if( t.y < 0. ) w *= 0.;
-				t.y += dt.y;
-			}
-		
 			
 			float4 col = map( pos );
 	        
