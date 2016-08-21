@@ -4,16 +4,15 @@ public class CloudsStructured : CloudsBase
 {
 	protected override void RenderSetupInternal()
 	{
-		Vector4 camPos = new Vector4( transform.position.x, transform.position.y, transform.position.z, 0.0f );
-		cloudsMaterial.SetVector( "_CamPos", camPos );
+        // we can't just read these from the matrices because the clouds are rendered with a post proc camera
+		cloudsMaterial.SetVector( "_CamPos", transform.position );
+		cloudsMaterial.SetVector( "_CamForward", transform.forward );
+		cloudsMaterial.SetVector( "_CamRight", transform.right );
 		
-		Vector4 camForward = new Vector4( transform.forward.x, transform.forward.y, transform.forward.z, 0.0f );
-		cloudsMaterial.SetVector( "_CamForward", camForward );
-		Vector4 camRight = new Vector4( transform.right.x, transform.right.y, transform.right.z, 0.0f );
-		cloudsMaterial.SetVector( "_CamRight", camRight );
-		
+        // noise texture
 		cloudsMaterial.SetTexture( "_NoiseTex", noiseTexture );
 		
+        // for generating rays
 		cloudsMaterial.SetFloat( "_HalfFov", halfFov_horiz_rad );
 	}
 

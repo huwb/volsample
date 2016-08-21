@@ -9,11 +9,14 @@ Shader "Custom/Clouds 3D Strat" {
 	
 	// the number of volume samples to take
 	#define SAMPLE_COUNT 32
-	#define PERIOD 1.
+
+	// spacing between samples
+	#define SAMPLE_PERIOD 1.
 	
 	// sun direction
 	#define SUN_DIR float3(-0.70710678,0.,-.70710678)
 	
+	// show diagram
 	//#define DIAGRAM_OVERLAY
 
 	struct v2fd {
@@ -21,13 +24,13 @@ Shader "Custom/Clouds 3D Strat" {
 		float2 uv  : TEXCOORD0;
 	};
 	
-	sampler2D _MainTex;
+	uniform sampler2D _NoiseTex;
 
-	sampler2D _NoiseTex;
-	
-	uniform float4 _CamPos;
-	uniform float4 _CamForward;
-	uniform float4 _CamRight;
+	// passed in as this shader is run from a post proc camera
+	uniform float3 _CamPos;
+	uniform float3 _CamForward;
+	uniform float3 _CamRight;
+
 	uniform float  _HalfFov;
 	
 	v2fd vert( appdata_img v )
@@ -75,10 +78,11 @@ Shader "Custom/Clouds 3D Strat" {
 	    return res;
 	}
 
+	// returns either -1 or 1, but not 0
 	float mysign( float x ) { return x < 0. ? -1. : 1.; }
 	float2 mysign( float2 x ) { return float2( x.x < 0. ? -1. : 1., x.y < 0. ? -1. : 1. ) ; }
 
-	void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in float3 rd, float period )
+	void SetupSampling( in float3 ro, in float3 rd, in float period, out float2 t, out float2 dt, out float2 wt, out float endFadeDist )
 	{
 		// strata line normals
 		float3 n0 = abs( rd.x ) > abs( rd.z ) ? float3(1., 0., 0.) : float3(0., 0., 1.); // non diagonal
@@ -108,9 +112,13 @@ Shader "Custom/Clouds 3D Strat" {
 
 		// sample weights
 		float minperiod = period;
-		float maxperiod = sqrt( 2. )*period;
+		float maxperiod = .9*sqrt( 2. )*period; // .9 reduces blend overlap between slices
 		wt = smoothstep( maxperiod, minperiod, dt/ln );
 		wt /= (wt.x + wt.y);
+
+		// fade samples at far extent
+		float f = .6; // magic number for now, derivation coming soon.
+		endFadeDist = f*float( SAMPLE_COUNT )*period;
 	}
 	
 	float4 Raymarch( in float3 ro, in float3 rd )
@@ -120,9 +128,11 @@ Shader "Custom/Clouds 3D Strat" {
 	    // setup sampling
 	    float2 wt;
 		float2 t, dt;
-		SetupSampling( t, dt, wt, ro, rd, PERIOD );
+		float endFadeDist;
+		SetupSampling( ro, rd, SAMPLE_PERIOD, t, dt, wt, endFadeDist );
 
-	    for( int i=0; i<SAMPLE_COUNT; i++ )
+		
+		for( int i=0; i<SAMPLE_COUNT; i++ )
 	    {
 	        if( sum.a > 0.99 ) continue;
 
@@ -130,7 +140,7 @@ Shader "Custom/Clouds 3D Strat" {
 			// data for next sample
 			const float4 data = t.x < t.y ? float4(t.x, wt.x, dt.x, 0.0) : float4(t.y, wt.y, 0.0, dt.y); // ( t, wt, dt )
 			const float3 pos = ro + data.x * rd;
-			const float w = data.y;
+			const float w = data.y * smoothstep( endFadeDist, 0.95*endFadeDist, data.x );
 			t += data.zw;
 
 			
@@ -180,113 +190,49 @@ Shader "Custom/Clouds 3D Strat" {
 	    return col;
 	}
 	
-	#define DIAGRAM_SCALE 0.015
-	#define DIAGRAM_PERIOD 10.
-
-	float DiagramDot( float2 pos, float2 uv )
-	{
-		pos *= DIAGRAM_SCALE;
-
-		float rad = 0.009;
-		float feath = 0.005;
-		float l = length( uv - pos );
-		float res = smoothstep( rad + feath, rad, l );
-		float m1 = 1.6, m2 = 2.4;
-		res += .5*smoothstep( rad * m1, rad * m1 + feath, l );
-		res -= .5*smoothstep( rad * m2, rad * m2 + feath, l );
-		return 2.*res;
-	}
-
-	#define vec2 float2
-	#define vec3 float3
-	#define fract frac
-	#define mix lerp
-
-	float DiagramLine(vec2 p, vec2 n)
-	{
-		n /= dot( n, n );
-
-		float d = abs( dot( p, n ) );
-		float fr = abs( fract( d / DIAGRAM_PERIOD ) );
-		// fix fract boundary
-		fr = min( fr, 1. - fr );
-
-		return smoothstep( .03, 0., fr );
-	}
-
-	float3 Diagram( float3 ro, float3 fo, float3 ri, float2 uv )
-	{
-		uv.y += 0.1;
-
-		// move uvs to origin, correct for aspect
-		uv = 2. * uv - 1.;
-		uv.x *= _ScreenParams.x / _ScreenParams.y;
-
-		float res = 0.;
-
-		for( int j = -5; j <= 5; j++ )
-		{
-			float3 rd = fo + 0.1 * float(j) * ri;
-			rd = normalize( rd );
-
-			float2 t, dt, wt;
-			SetupSampling( t, dt, wt, ro, rd, DIAGRAM_PERIOD );
-			for( int i = 0; i < 15; i++ )
-			{
-				// data for next sample
-				const float4 data = t.x < t.y ? float4(t.x, wt.x, dt.x, 0.0) : float4(t.y, wt.y, 0.0, dt.y); // ( t, wt, dt )
-				const float w = data.y;
-				t += data.zw;
-
-				const float2 x = float2(0.,-5.)*0. + data.x * normalize( float2( 0.1 * float(j), 1. ) );
-
-				res = max( res, w*DiagramDot( x, uv ) );
-			}
-		}
-
-		float2 lp = uv / DIAGRAM_SCALE;
-		lp = lp.x * _CamRight.xz + lp.y * _CamForward.xz;
-		lp += _CamPos.xz;
-
-		float lines = 0.;
-		lines = max( lines, DiagramLine( lp, float2(1., 0.) ) );
-		lines = max( lines, DiagramLine( lp, float2(0., 1.) ) );
-		lines = max( lines, DiagramLine( lp, float2(1., 1.) ) );
-		lines = max( lines, DiagramLine( lp, float2(1., -1.) ) );
-
-		return (float3)(res+0.2*lines);
-	}
+	#include "DiagramOverlay.cginc"
 
 	float4 frag(v2fd i) : SV_Target 
-	{	
-		float3 camUp = cross( _CamForward.xyz, _CamRight.xyz );
-		
+	{
 		float2 q = i.uv;
 		float2 p = 2.0*(q - 0.5);
 		
+		// camera
     	float fovH = tan(_HalfFov);
     	float fovV = tan(_HalfFov * _ScreenParams.y/_ScreenParams.x);
+		float3 camUp = cross( _CamForward.xyz, _CamRight.xyz );
 		float3 rd = normalize(_CamForward.xyz + p.y * fovV * camUp + p.x * fovH * _CamRight.xyz);
-		
-		// march away
-    	float4 res = Raymarch( _CamPos, rd );
+		float3 ro = _WorldSpaceCameraPos;
+
+		// march through volume
+    	float4 clouds = Raymarch( ro, rd );
     	
-		// blend in sky if it is visible
-		if( res.a <= 0.99 )
-			res.xyz = lerp( skyColor( rd ), res.xyz, res.w );
+		// result color
+		float3 col = clouds.xyz;
+
+		// compute and blend in sky if it is visible
+		if( clouds.a <= 0.99 )
+			col = lerp( skyColor( rd ), col, clouds.a );
 	    
 	    // post process
-		res.xyz = clamp( res.xyz, 0., 1.);
-		res.xyz = smoothstep(0.,1., res.xyz ); // Contrast
-		res.xyz *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); // Vignette
+		col = clamp( col, 0., 1.);
+		col = smoothstep(0.,1., col ); // Contrast
+		col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); // Vignette
 
 		// diagram overlay
 		#ifdef DIAGRAM_OVERLAY
-		res.xyz *= .6;
-		res.xyz += 0.4 * Diagram( _CamPos, _CamForward, _CamRight, i.uv );
+		float diagramPeriod = 10.;
+		float diagramT = fmod( _Time.y, diagramPeriod );
+		float diagram_alpha = smoothstep( .5*diagramPeriod, .55*diagramPeriod, diagramT );
+		diagram_alpha *= smoothstep( diagramPeriod, .95*diagramPeriod, diagramT );
+		if( diagram_alpha > 0.01 )
+		{
+			float3 diagram = Diagram( _CamPos, _CamForward, _CamRight, i.uv );
+			col = mix( col, col * 0.6 + 0.4 * diagram, diagram_alpha );
+		}
 		#endif
 
-		return float4(res.xyz, 1.0);
+		return float4(col, 1.0);
 	}
 	
 	ENDCG 
