@@ -8,7 +8,7 @@ Research on sampling methods for real-time volume rendering.
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
-Contacts: Huw Bowles (huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (beibei dot wang at gmail dot com)
+Contacts: Huw Bowles (@hdb1, huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (beibei dot wang at gmail dot com)
 
 
 ## Intro
@@ -17,7 +17,7 @@ Volume rendering in real-time applications is expensive, and sample counts are t
 
 This repos started as the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015 [1]. The full presentation PPT is available for download from the course page [here][ADVANCES2015]. While this is useful reading, the latest implementation takes a new approach which completely replaces most of the approaches introduced in the talk.
 
-The latest approach, Structured Sampling, works by placing samples on grid lines, constraining their motion to one dimension which is densely sampled by the set of pixel rays and robust against aliasing. Right now We are in the process of working out the details, extending the method to 3D, and writing up an article. 
+The latest approach, Structured Sampling, works by placing samples on a set of world-space planes, constraining their motion and eliminating noticeable aliasing. Right now we are in the process of working out the details, extending the method to 3D (as opposed to flatland 2D), and writing up an article. 
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
@@ -37,6 +37,8 @@ There is also a ShaderToy running here: https://www.shadertoy.com/view/Mt3GWs
 Article coming soon.
 
 In the meantime there is a diagram shader here: https://www.shadertoy.com/view/ll3GWs
+
+Uncomment the DIAGRAM_OVERLAY define in *CloudsStructured.shader* to see the diagram overlaid onto the render.
 
 
 ## Troubleshooting
