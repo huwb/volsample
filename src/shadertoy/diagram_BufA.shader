@@ -22,8 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#define PERIOD (40.)
-#define SAMPLE_CNT 15
+//
+// Diagram shader to accompany volume rendering research:
+//
+// Shader: https://www.shadertoy.com/view/Mt3GWs
+// Github: https://github.com/huwb/volsample
+//
+//
+
+#define PERIOD (20.)
+#define SAMPLE_CNT 12
 #define RESOLUTIONS 1
 #define GRID_CONTRAST 1.5
 #define PI 3.141592654
@@ -43,8 +51,12 @@ void halveDensity( inout vec2 t, inout vec2 dt, vec3 ro, vec3 rd, vec3 n0, vec3 
     doto.y = dot( n1, ro + t.y*rd );
     vec2 dist = abs(doto/dotd);
     vec2 fr = fract( dist/dt );
-	if( fr.x > .01 && fr.x < .99 ) t.x += .5 * dt.x;
-	if( fr.y > .01 && fr.y < .99 ) t.y += .5 * dt.y;
+    if( fr.x > .01 && fr.x < .99 ) t.x += .5 * dt.x;
+    if( fr.y > .01 && fr.y < .99 ) t.y += .5 * dt.y;
+}
+float smoothbump( float r, float x )
+{
+    return smoothstep( r-2., r, x ) - smoothstep( r, r+2., x );
 }
 
 // to share with unity hlsl
@@ -67,6 +79,8 @@ void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in
     
     // structured sampling pattern line normals
     float3 n0 = abs( rd.x ) > abs( rd.z ) ? float3(1., 0., 0.) : float3(0., 0., 1.); // non diagonal
+    n0 *= sqrt(2.);
+    //n0 *= 2.;
     float3 n1 = float3(mysign( rd.x * rd.z ), 0., 1.); // diagonal
 
     // normal lengths (used later)
@@ -92,7 +106,7 @@ void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in
 
     // sample weights
     float minperiod = PERIOD;
-    float maxperiod = sqrt( 2. )*PERIOD;
+    float maxperiod = .8*sqrt( 2. )*PERIOD;
     wt = smoothstep( maxperiod, minperiod, dt/ln );
     wt /= (wt.x + wt.y);
 }
@@ -105,12 +119,22 @@ vec3 Raymarch( vec3 ro, vec3 rd, vec2 p )
     
     vec2 t, dt, wt;
     SetupSampling( t, dt, wt, ro, rd );
-    //t.x = 1000.; // debug: dont take horiz/verts
-    //t.y = 1000.; // debug: dont take diagonals
+    // if wt < eps, don't sample ray
+    if( wt.x < 0.01 ) t.x = 10000.;
+    if( wt.y < 0.01 ) t.y = 10000.;
+    
+    // interpolate between diags/nondiags based on weight
+    //t.x = t.y = dot( wt, t );
+    //dt.x = dt.y = dot( wt, dt );
     
     //0.5 because i call halveDensity at beginning of loop
     //dt *= 0.5;
     
+    // fade samples at far extent
+    float f = .6; // magic number - TODO justify this
+    float endFade = f*float(SAMPLE_CNT)*PERIOD;
+    float startFade = .9*endFade;
+
     for( int j = 0; j < RESOLUTIONS; j ++ )
     {
         //halveDensity( t, dt, ro, rd, n0, n1, dotd );
@@ -118,15 +142,20 @@ vec3 Raymarch( vec3 ro, vec3 rd, vec2 p )
         for( int i = 0; i < SAMPLE_CNT; i++ )
         {
             // next sample data
-	        vec4 data = t.x < t.y ? vec4( t.x, wt.x, dt.x, 0. ) : vec4( t.y, wt.y, 0., dt.y );
+            vec4 data = t.x < t.y ? vec4( t.x, wt.x, dt.x, 0. ) : vec4( t.y, wt.y, 0., dt.y );
             
             vec3 pos = ro + data.x * rd;
             float w = data.y;
             t += data.zw;
             
+            // fade samples at far extent
+            //w *= smoothstep( endFade, startFade, data.x );
+            
             // render - in this case draw dots at each sample
             vec3 col = vec3(1.,1.,0.);
-            col = normalize(mix(vec3(1.,0.,0.),vec3(0.,1.,0.), float(i)/float(SAMPLE_CNT-1)));
+            col.xy = .8*sign(data.zw);
+            //col = mix(vec3(0.,1.,0.),vec3(1.,0.,0.), float(i)/float(SAMPLE_CNT-1));
+            //col /= max(col.r,col.g); // brighten up
             fragColor = max(fragColor, w*smoothstep( 4., 2., length( pos.xz - p ) ) * col);
         }
     }
@@ -140,7 +169,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     fragColor = vec4(0.);
     
-    vec2 ro2 = iMouse.xy - iResolution.xy/2.;
+    vec2 ro2 = 82.*vec3(cos(.5*iGlobalTime)-.01,0.,sin(.7*iGlobalTime)).xz;
+    if( iMouse.z > 0. )
+        ro2 = iMouse.xy - iResolution.xy/2.;
     vec3 ro = vec3(ro2.x,0.,ro2.y);
     vec3 center = 80.*vec3(cos(iGlobalTime),0.,sin(iGlobalTime));
     vec3 rd = normalize(center-ro);
@@ -150,11 +181,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     float fov = 0.015;
     for( float of = -20.; of <= 20.; of += 5. )
     {
-    	fragColor.rgb += Raymarch( ro, rd + fov*of*float3(mn.x,0.,mn.y), p );
+        fragColor.rgb += Raymarch( ro, rd + fov*of*float3(mn.x,0.,mn.y), p );
     }
     
     if( ACCUMULATE )
-	    fragColor = max( fragColor.rgba, texture2D(iChannel0,fragCoord/iResolution.xy)*.95);
+        fragColor = max( fragColor.rgba, texture2D(iChannel0,fragCoord/iResolution.xy)*.95);
+    
+    float maxextent = float(SAMPLE_CNT) * sqrt(2.) * PERIOD;
+    
+    fragColor.r += .6*smoothbump( maxextent, length(p-ro.xz) );
+    fragColor.b += .6*smoothbump( maxextent, length(p-ro.xz) );
     
     // viewer pos
     fragColor.g += smoothstep(4.,2.,length(ro.xz+iResolution.xy/2.-fragCoord));

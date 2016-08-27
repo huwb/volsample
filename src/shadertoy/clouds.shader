@@ -22,34 +22,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Example to illustrate volume sampling research undertaken right here on
-// shadertoy and published at siggraph 2015:
 //
-// http://advances.realtimerendering.com/s2015/index.html
+// For diagram shader showing how samples are taken:
 //
-// In particular this shader demonstrates Forward Pinning and Adaptive Sampling.
-// The general advection requires state and is not implemented here, see the Unity
-// implementation for this:
+// https://www.shadertoy.com/view/llcGRS
+//
+// We are in the process of writing up this technique. The following github repos
+// is the home of this research.
 //
 // https://github.com/huwb/volsample
 //
-// For a diagram shader illustrating the adaptive sampling:
-//
-// https://www.shadertoy.com/view/llXSD7
 // 
 //
-// Credits - this scene is mostly mash up of these two amazing shaders:
+// Additional credits - this scene is mostly mash up of these two amazing shaders:
 //
 // Clouds by iq: https://www.shadertoy.com/view/XslGRr
 // Cloud Ten by nimitz: https://www.shadertoy.com/view/XtS3DD
 // 
 
 #define SAMPLE_COUNT 32
-#define MOUSEY (3.*iMouse.y/iResolution.y)
 #define PERIOD 1.
 
 // mouse toggle
-bool STRATIFIED = true;
+bool STRUCTURED = true;
 
 // cam moving in a straight line
 vec3 lookDir = vec3(cos(.53*iGlobalTime),0.,sin(iGlobalTime));
@@ -73,7 +68,7 @@ float noise( in vec3 x )
 
 vec4 map( in vec3 p )
 {
-	float d = 0.1 + .8 * sin(0.6*p.z)*sin(0.5*p.x) - p.y;
+    float d = 0.1 + .8 * sin(0.6*p.z)*sin(0.5*p.x) - p.y;
 
     vec3 q = p;
     float f;
@@ -106,7 +101,7 @@ float2 mysign( float2 x ) { return float2( x.x < 0. ? -1. : 1., x.y < 0. ? -1. :
 // compute ray march start offset and ray march step delta and blend weight for the current ray
 void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in float3 rd )
 {
-    if( !STRATIFIED )
+    if( !STRUCTURED )
     {
         dt = float2(PERIOD,PERIOD);
         t = dt;
@@ -150,10 +145,15 @@ vec4 raymarch( in vec3 ro, in vec3 rd )
 {
     vec4 sum = vec4(0, 0, 0, 0);
     
-    // setup sampling
+    // setup sampling - compute intersection of ray with 2 sets of planes
     float2 t, dt, wt;
-	SetupSampling( t, dt, wt, ro, rd );
-    //t.y=12000.;
+    SetupSampling( t, dt, wt, ro, rd );
+    
+    // fade samples at far extent
+    float f = .6; // magic number - TODO justify this
+    float endFade = f*float(SAMPLE_COUNT)*PERIOD;
+    float startFade = .8*endFade;
+    
     for(int i=0; i<SAMPLE_COUNT; i++)
     {
         if( sum.a > 0.99 ) continue;
@@ -166,6 +166,8 @@ vec4 raymarch( in vec3 ro, in vec3 rd )
         float w = data.y;
         t += data.zw;
         
+        // fade samples at far extent
+        w *= smoothstep( endFade, startFade, data.x );
         
         vec4 col = map( pos );
         
@@ -176,15 +178,11 @@ vec4 raymarch( in vec3 ro, in vec3 rd )
         
         col.xyz *= col.xyz;
         
-        col.a *= 0.35;
+        col.a *= 0.5;
         col.rgb *= col.a;
 
-        // fade samples at far field
-        float fadeout = 1.;// 1.-clamp((t/(DIST_MAX*.3)-.85)/.15,0.,1.); // .3 is an ugly fudge factor due to oversampling
-            
         // integrate
-        //thisDt = sqrt(thisDt/5. )*5.; // hack to soften and brighten
-        sum += col * (1.0 - sum.a) * fadeout * w;
+        sum += col * (1.0 - sum.a) * w;
     }
 
     sum.xyz /= (0.001+sum.w);
@@ -221,8 +219,9 @@ vec3 sky( vec3 rd )
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    // click mouse to use naive raymarching
     if( iMouse.z > 0. )
-        STRATIFIED = false;
+        STRUCTURED = false;
     
     vec2 q = fragCoord.xy / iResolution.xy;
     vec2 p = -1.0 + 2.0*q;
@@ -230,25 +229,26 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec2 mo = -1.0 + 2.0*iMouse.xy / iResolution.xy;
    
     // camera
-    vec3 ro = vec3(0.,1.9,0.) + iGlobalTime*camVel;
+    vec3 ro = vec3(0.,1.5,0.) + iGlobalTime*camVel;
     vec3 ta = ro + lookDir; //vec3(ro.x, ro.y, ro.z-1.);
     vec3 ww = normalize( ta - ro);
     vec3 uu = normalize(cross( vec3(0.0,1.0,0.0), ww ));
     vec3 vv = normalize(cross(ww,uu));
     vec3 rd = normalize( p.x*uu + 1.2*p.y*vv + 1.5*ww );
     
-    // sky
-    vec3 col = sky(rd);
-    
     // divide by forward component to get fixed z layout instead of fixed dist layout
     //vec3 rd_layout = rd/mix(dot(rd,ww),1.0,samplesCurvature);
     vec4 clouds = raymarch( ro, rd );
     
-    col = mix( col, clouds.xyz, clouds.w );
+    vec3 col = clouds.xyz;
+        
+    // sky if visible
+    if( clouds.w <= 0.99 )
+        col = mix( sky(rd), col, clouds.w );
     
-	col = clamp(col, 0., 1.);
+    col = clamp(col, 0., 1.);
     col = smoothstep(0.,1.,col);
-	col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); //Vign
+    col *= pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.12 ); //Vign
         
     fragColor = vec4( col, 1.0 );
 }
