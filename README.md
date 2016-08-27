@@ -6,7 +6,7 @@ Research on sampling methods for real-time volume rendering.
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [llcGRS](https://www.shadertoy.com/view/llcGRS)
+Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
 Contacts: Huw Bowles (huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (beibei dot wang at gmail dot com)
 
@@ -20,7 +20,7 @@ This repos started as the source code for the course titled *A Novel Sampling Al
 The latest approach, Structured Sampling, works by placing samples on grid lines, constraining their motion to one dimension which is densely sampled by the set of pixel rays and robust against aliasing. Right now We are in the process of working out the details, extending the method to 3D, and writing up an article. 
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [llcGRS](https://www.shadertoy.com/view/llcGRS)
+Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
 
 ## Running
@@ -36,7 +36,7 @@ There is also a ShaderToy running here: https://www.shadertoy.com/view/Mt3GWs
 
 Article coming soon.
 
-In the meantime there is a diagram shader here: https://www.shadertoy.com/view/llcGRS
+In the meantime there is a diagram shader here: https://www.shadertoy.com/view/ll3GWs
 
 
 ## Troubleshooting
