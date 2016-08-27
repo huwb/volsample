@@ -6,7 +6,7 @@ Research on sampling methods for real-time volume rendering.
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)
+Shadertoy sampling diagram: [llcGRS](https://www.shadertoy.com/view/llcGRS)
 
 Contacts: Huw Bowles (huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (beibei dot wang at gmail dot com)
 
@@ -20,7 +20,7 @@ This repos started as the source code for the course titled *A Novel Sampling Al
 The latest approach, Structured Sampling, works by placing samples on grid lines, constraining their motion to one dimension which is densely sampled by the set of pixel rays and robust against aliasing. Right now We are in the process of working out the details, extending the method to 3D, and writing up an article. 
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)
+Shadertoy sampling diagram: [llcGRS](https://www.shadertoy.com/view/llcGRS)
 
 
 ## Running
@@ -36,14 +36,14 @@ There is also a ShaderToy running here: https://www.shadertoy.com/view/Mt3GWs
 
 Article coming soon.
 
-In the meantime there is a diagram shader here: https://www.shadertoy.com/view/Mt3GWs
+In the meantime there is a diagram shader here: https://www.shadertoy.com/view/llcGRS
 
 
 ## Troubleshooting
 
 You may run into the following:
 
-* If you see just the standard sky box render in the camera view, re-enable the *CloudsRayScales3D* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try touching the shader file or reopening Unity.
+* If you see just the standard sky box render in the camera view, re-enable the *CloudsStructured* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try touching the shader file or reopening Unity.
 
 
 ## Bugs and improvement directions
