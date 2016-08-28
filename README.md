@@ -8,10 +8,12 @@ Research on sampling methods for real-time volume rendering.
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
-Contacts: Huw Bowles (@hdb1, huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (beibei dot wang at gmail dot com)
+Contacts: Huw Bowles (@hdb1), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (bebei dot wang at gmail dot com)
+
+Retweet to support this work: https://twitter.com/hdb1/status/769615284672028672  
 
 
-## Intro
+## Introduction
 
 Volume rendering in real-time applications is expensive, and sample counts are typically low. When the camera is inside the volume, the volume samples typically move around with the camera which can cause severe aliasing. This repository provides a new, fast, efficient and simple algorithm for eliminating aliasing for this camera-in-volume case.
 
@@ -50,9 +52,8 @@ You may run into the following:
 
 ## Bugs and improvement directions
 
-* The render breaks down when the camera is raised above the clouds etc. It would be valuable to polish this and make it work for all camera angles.
-Or to add another scene where the volume completely envelops the camera.
-
+* The current sample slices are all set up for flatland 2D. We're working on extending this to full 3D.
+* The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and will be reinstated.
 
 
 ## References
