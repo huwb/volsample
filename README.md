@@ -3,7 +3,8 @@
 
 Research on sampling methods for real-time volume rendering.
 
-![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)
+![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)  
+Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/volrender_800x450_30fps.mp4).
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
@@ -40,7 +41,7 @@ Article coming soon.
 
 In the meantime there is a diagram shader here: https://www.shadertoy.com/view/ll3GWs
 
-Uncomment the DIAGRAM_OVERLAY define in *CloudsStructured.shader* to see the diagram overlaid onto the render.
+Uncomment the *DIAGRAM_OVERLAY* define in *CloudsStructured.shader* to see the diagram overlaid onto the render.
 
 
 ## Troubleshooting
@@ -54,6 +55,7 @@ You may run into the following:
 
 * The current sample slices are all set up for flatland 2D. We're working on extending this to full 3D.
 * The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and will be reinstated.
+* Code optimisation: much of the logic and computation in *SetupSampling()* can hopefully be extracted out to either the CPU (position dependent stuff) or a VS (direction dependent stuff). *doc/OptimisationThoughts.txt* has some more thoughts.
 
 
 ## References
