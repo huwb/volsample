@@ -23,14 +23,17 @@ SOFTWARE.
 */
 
 //
-// Diagram shader to accompany volume rendering research:
+// For volume render shader:
 //
-// Shader: https://www.shadertoy.com/view/Mt3GWs
-// Github: https://github.com/huwb/volsample
+// https://www.shadertoy.com/view/Mt3GWs
 //
+// We are in the process of writing up this technique. The following github repos
+// is the home of this research.
+//
+// https://github.com/huwb/volsample
 //
 
-#define PERIOD (20.)
+#define PERIOD (30.)
 #define SAMPLE_CNT 12
 #define RESOLUTIONS 1
 #define GRID_CONTRAST 1.5
@@ -63,8 +66,22 @@ float smoothbump( float r, float x )
 #define float2 vec2
 #define float3 vec3
 #define fmod mod
-float mysign( float x ) { return x < 0. ? -1. : 1. ; }
-float2 mysign( float2 x ) { return float2( x.x < 0. ? -1. : 1., x.y < 0. ? -1. : 1. ) ; }
+
+void IntersectPlanes( float3 n, float3 rd, float3 ro, out float t_0, out float dt, out float wt )
+{
+    // step size
+    float ndotrd = dot( rd, n );
+    dt = PERIOD / abs( ndotrd );
+
+    // raymarch start offset - skips leftover bit to get from ro to first strata lines
+    t_0 = -fmod( dot( ro, n ), PERIOD ) / ndotrd;
+    if( ndotrd > 0. ) t_0 += dt;
+
+    // ray weight
+    float minperiod = PERIOD;
+    float maxperiod = .8*sqrt( 2. )*PERIOD;
+    wt = smoothstep( maxperiod, minperiod, dt );
+}
 
 // compute ray march start offset and ray march step delta and blend weight for the current ray
 void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in float3 rd )
@@ -77,87 +94,59 @@ void SetupSampling( out float2 t, out float2 dt, out float2 wt, in float3 ro, in
         return;
     }
     
-    // structured sampling pattern line normals
-    float3 n0 = abs( rd.x ) > abs( rd.z ) ? float3(1., 0., 0.) : float3(0., 0., 1.); // non diagonal
-    n0 *= sqrt(2.);
-    //n0 *= 2.;
-    float3 n1 = float3(mysign( rd.x * rd.z ), 0., 1.); // diagonal
+    // the following code computes intersections between the current ray, and a set
+    // of (possibly) stationary sample planes.
+    
+    // this would be better computed on the VS
+        
+    // intersect ray with planes
+    float3 n;
+    
+    n = abs( rd.x ) > abs( rd.z ) ? float3(1., 0., 0.) : float3(0., 0., 1.); // non diagonal
+    IntersectPlanes( n, rd, ro, t.x, dt.x, wt.x );
+    
+    n = float3( rd.x * rd.z > 0. ? 1. : -1., 0., 1.) / sqrt(2.); // diagonal
+    IntersectPlanes( n, rd, ro, t.y, dt.y, wt.y );
 
-    // normal lengths (used later)
-    float2 ln = float2(length( n0 ), length( n1 ));
-    n0 /= ln.x;
-    n1 /= ln.y;
-
-    // some useful DPs
-    float2 ndotro = float2(dot( ro, n0 ), dot( ro, n1 ));
-    float2 ndotrd = float2(dot( rd, n0 ), dot( rd, n1 ));
-
-    // step size
-    float2 period = ln * PERIOD;
-    dt = period / abs( ndotrd );
-
-    // dist to line through origin
-    float2 dist = abs( ndotro / ndotrd );
-
-    // raymarch start offset - skips leftover bit to get from ro to first strata lines
-    t = -mysign( ndotrd ) * fmod( ndotro, period ) / abs( ndotrd );
-    if( ndotrd.x > 0. ) t.x += dt.x;
-    if( ndotrd.y > 0. ) t.y += dt.y;
-
-    // sample weights
-    float minperiod = PERIOD;
-    float maxperiod = .8*sqrt( 2. )*PERIOD;
-    wt = smoothstep( maxperiod, minperiod, dt/ln );
     wt /= (wt.x + wt.y);
+}
+
+float MarchAgainstPlanes( float t0, float dt, float wt, vec3 ro, vec3 rd, vec2 p )
+{
+    float t = t0;
+    float res = 0.;
+    
+    for( int i = 0; i < SAMPLE_CNT; i++ )
+    {
+        vec3 pos = ro + t * rd;
+        
+        // render - in this case draw dots at each sample
+        res = max( res, wt*smoothstep( 4., 2., length( pos.xz - p ) ) );
+        
+        t += dt;
+    }
+    
+    return res;
 }
 
 vec3 Raymarch( vec3 ro, vec3 rd, vec2 p )
 {
-    //rd = normalize(rd);
-    
     vec3 fragColor = vec3(0.);
     
+    // this intersects the ray with a set of planes (shown as lines in the diagram).
+    // these calculations could be moved outside the pixel shader in normal scenarios.
     vec2 t, dt, wt;
     SetupSampling( t, dt, wt, ro, rd );
-    // if wt < eps, don't sample ray
-    if( wt.x < 0.01 ) t.x = 10000.;
-    if( wt.y < 0.01 ) t.y = 10000.;
     
-    // interpolate between diags/nondiags based on weight
-    //t.x = t.y = dot( wt, t );
-    //dt.x = dt.y = dot( wt, dt );
-    
-    //0.5 because i call halveDensity at beginning of loop
-    //dt *= 0.5;
-    
-    // fade samples at far extent
-    float f = .6; // magic number - TODO justify this
-    float endFade = f*float(SAMPLE_CNT)*PERIOD;
-    float startFade = .9*endFade;
-
-    for( int j = 0; j < RESOLUTIONS; j ++ )
+    if( wt.x >= 0.01 )
     {
-        //halveDensity( t, dt, ro, rd, n0, n1, dotd );
-        
-        for( int i = 0; i < SAMPLE_CNT; i++ )
-        {
-            // next sample data
-            vec4 data = t.x < t.y ? vec4( t.x, wt.x, dt.x, 0. ) : vec4( t.y, wt.y, 0., dt.y );
-            
-            vec3 pos = ro + data.x * rd;
-            float w = data.y;
-            t += data.zw;
-            
-            // fade samples at far extent
-            //w *= smoothstep( endFade, startFade, data.x );
-            
-            // render - in this case draw dots at each sample
-            vec3 col = vec3(1.,1.,0.);
-            col.xy = .8*sign(data.zw);
-            //col = mix(vec3(0.,1.,0.),vec3(1.,0.,0.), float(i)/float(SAMPLE_CNT-1));
-            //col /= max(col.r,col.g); // brighten up
-            fragColor = max(fragColor, w*smoothstep( 4., 2., length( pos.xz - p ) ) * col);
-        }
+        float march = MarchAgainstPlanes( t.x, dt.x, wt.x, ro, rd, p );
+        fragColor = max( fragColor, march * .6*vec3(1.2,.2,.2) );
+    }
+    if( wt.y >= 0.01 )
+    {
+        float march = MarchAgainstPlanes( t.y, dt.y, wt.y, ro, rd, p );
+        fragColor = max( fragColor, march * .6*vec3(.2,1.2,.2) );
     }
     
     return fragColor;
@@ -187,7 +176,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if( ACCUMULATE )
         fragColor = max( fragColor.rgba, texture2D(iChannel0,fragCoord/iResolution.xy)*.95);
     
-    float maxextent = float(SAMPLE_CNT) * sqrt(2.) * PERIOD;
+    float maxextent = float(SAMPLE_CNT) * PERIOD;
     
     fragColor.r += .6*smoothbump( maxextent, length(p-ro.xz) );
     fragColor.b += .6*smoothbump( maxextent, length(p-ro.xz) );

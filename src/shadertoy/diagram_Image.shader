@@ -22,11 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Introduction bla bla
+//
+// For volume render shader:
+//
+// https://www.shadertoy.com/view/Mt3GWs
+//
+// We are in the process of writing up this technique. The following github repos
+// is the home of this research.
+//
+// https://github.com/huwb/volsample
+//
 
-// This file renders the background.
-
-#define PERIOD (40.)
+#define PERIOD (30.)
 #define SAMPLE_CNT 15
 #define RESOLUTIONS 1
 #define GRID_CONTRAST 1.5
@@ -41,8 +48,8 @@ float line( vec2 p, vec2 n, bool repeat )
     
     if( !repeat )
     {
-	    d = d / PERIOD;
-	    return smoothstep( 1.5/PERIOD, 0., abs(d) );
+        d = d / PERIOD;
+        return smoothstep( 1.5/PERIOD, 0., abs(d) );
     }
     
     float res = 0.;
@@ -63,13 +70,13 @@ float lines( vec2 p )
 {
     float l = 0.;
     
-    l = max( l, line( p, vec2(sqrt(2.),0.), true ) );
+    l = max( l, line( p, vec2(1.,0.), true ) );
     
     if( bool( 10 ) )
     {
-        l = max( l, line( p, vec2(1.,1.), true ) );
-        l = max( l, line( p, vec2(1.,-1.), true ) );
-        l = max( l, line( p, vec2(0.,sqrt(2.)), true ) );
+        l = max( l, line( p, vec2(1.,1.)/sqrt(2.), true ) );
+        l = max( l, line( p, vec2(1.,-1.)/sqrt(2.), true ) );
+        l = max( l, line( p, vec2(0.,1.), true ) );
     }
     
     return l;
