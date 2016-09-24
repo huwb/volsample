@@ -53,8 +53,7 @@ You may run into the following:
 
 ## Bugs and improvement directions
 
-* The current sample slices are all set up for flatland 2D. We're working on extending this to full 3D.
-* The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and will be reinstated.
+* The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and should be reinstated.
 * Code optimisation: much of the logic and computation in *SetupSampling()* can hopefully be extracted out to either the CPU (position dependent stuff) or a VS (direction dependent stuff). *doc/OptimisationThoughts.txt* has some more thoughts.
 
 
