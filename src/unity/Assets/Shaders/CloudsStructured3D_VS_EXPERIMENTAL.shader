@@ -1,5 +1,5 @@
 ﻿
-Shader "Custom/EXPERIMENTAL VS Clouds 3D Strat Geometry" {
+Shader "VolSample/EXPERIMENTAL VS Clouds 3D Strat Geometry" {
 	Properties {
 	}
 	

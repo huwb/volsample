@@ -1,5 +1,5 @@
 ﻿
-Shader "Custom/Clouds 3D Strat" {
+Shader "VolSample/Clouds Struct Flatland" {
 	Properties {
 	}
 	

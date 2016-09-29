@@ -1,5 +1,5 @@
 ﻿
-Shader "Custom/Clouds 3D Strat Biplane" {
+Shader "VolSample/Clouds Struct 3D Biplane" {
 	Properties {
 	}
 	
