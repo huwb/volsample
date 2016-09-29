@@ -81,8 +81,13 @@ Shader "VolSample/Clouds Struct 3D" {
 	float3 combineColors(in float4 clouds, in float3 rd)
 	{
 		float3 col = clouds.rgb;
-		if (clouds.a < 0.99)
-			col = lerp(skyColor(rd), col, clouds.a);
+
+		// check if any obscurance < 1
+		if( clouds.a < 0.99 )
+		{
+			// let some of the sky light through
+			col += skyColor( rd ) * (1. - clouds.a);
+		}
 
 		return col;
 	}

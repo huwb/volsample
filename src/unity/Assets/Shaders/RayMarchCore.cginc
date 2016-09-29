@@ -23,9 +23,9 @@ void IntegrateColor( in float4 col, in float dt, inout float4 sum )
 
 float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in const int RAYS )
 {
-	float4 sum0 = float4(0, 0, 0, 0);
-	float4 sum1 = float4(0, 0, 0, 0);
-	float4 sum2 = float4(0, 0, 0, 0);
+	float4 sum = (float4)0.;
+	float4 sum1 = sum;
+	float4 sum2 = sum;
 
 	// setup sampling
 	float3 t, dt;
@@ -38,10 +38,10 @@ float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in fl
 		// get the sampling positions and move on
 		float3 pos0 = ro + t.x * rd;
 
-		if( sum0.a <= 0.99 )
+		if( sum.a <= 0.99 )
 		{
 			float4 col = VolumeSampleColor( pos0 );
-			IntegrateColor( col, dt.x, sum0 );
+			IntegrateColor( col, dt.x, sum );
 		}
 
 		if( RAYS > 1 )
@@ -67,9 +67,11 @@ float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in fl
 		t += dt;
 	}
 
-	// finally, blend the results from the rays.
-	float4 sum = wt.x * sum0 + wt.y * sum1 + wt.z * sum2;
-	sum.xyz /= (0.001 + sum.w);
+	// blend rays
+	sum = wt.x * sum;
+	if( RAYS > 1 ) sum += wt.y * sum1;
+	if( RAYS > 2 ) sum += wt.z * sum2;
+
 
 	#if DEBUG_WEIGHTS
 	sum.rgb *= wt.x * abs( n0 ) + wt.y * abs( n1 ) + wt.z * abs( n2 );
