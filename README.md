@@ -53,12 +53,12 @@ We hope to publish a full description of this technique soon. Stay tuned!
 
 You may run into the following:
 
-* If you see just the standard sky box render in the camera view, re-enable the *CloudsStructure3D* script on the camera. if it auto disables itself when you enable it, it is likely because the shader is not building. look in the console log for shader build errors. if you don't see any you may have already cleared them - perhaps try touching the shader file or reopening Unity.
+* If you see just the standard sky box render in the camera view, re-enable the *CloudsStructure3D* script on the camera. If it auto disables itself when you enable it, look in the log for shader errors. If none are visible they may have already been cleared - perhaps try touching the shader file or restarting Unity.
 
 
 ## Bugs and improvement directions
 
-* The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and should be reinstated.
+* The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and could be reinstated.
 
 
 ## References

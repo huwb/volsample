@@ -76,7 +76,9 @@ float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in fl
 	#if DEBUG_WEIGHTS
 	sum.rgb *= wt.x * abs( n0 ) + wt.y * abs( n1 ) + wt.z * abs( n2 );
 	#elif DEBUG_BEVEL
-	sum *= float4(1, 0, 0, 1);
+	if( RAYS == 1 ) sum.rb *= 0.;
+	else if( RAYS == 2 ) sum.b *= 0.;
+	else sum.gb *= 0.;
 	#endif
 
 	return saturate( sum );
