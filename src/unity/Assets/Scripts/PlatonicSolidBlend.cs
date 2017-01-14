@@ -330,11 +330,13 @@ public class PlatonicSolidBlend : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         // draw a visualisation of the dodec mesh in the scene view, for fun
-        Gizmos.color = new Color( 1f, 1f, 1f, 0.4f );
+        Gizmos.color = new Color( 0f, 0f, 0f, 0.2f );
         Gizmos.DrawWireMesh( mesh, -1, transform.position );
-        Gizmos.color = new Color( 1f, 1f, 1f, 0.15f );
-        Gizmos.DrawWireMesh( mesh, 0, transform.position, Quaternion.identity, 1.4f * Vector3.one );
-        Gizmos.color = new Color( 1f, 1f, 1f, 0.05f );
-        Gizmos.DrawWireMesh( mesh, 0, transform.position, Quaternion.identity, 1.8f * Vector3.one );
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.6f );
+        Gizmos.DrawMesh( mesh, 0, transform.position );
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.2f );
+        Gizmos.DrawMesh( mesh, 0, transform.position, Quaternion.identity, 1.2f * Vector3.one );
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.2f );
+        Gizmos.DrawMesh( mesh, 0, transform.position, Quaternion.identity, 1.4f * Vector3.one );
     }
 }
