@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 [ExecuteInEditMode]
@@ -326,5 +325,16 @@ public class PlatonicSolidBlend : MonoBehaviour
         float g = Mathf.Sqrt(1f - f / 4f);
 
         return new Vector3(fEnc.x * g, fEnc.y * g, 1f - f / 2f);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // draw a visualisation of the dodec mesh in the scene view, for fun
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.4f );
+        Gizmos.DrawWireMesh( mesh, -1, transform.position );
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.15f );
+        Gizmos.DrawWireMesh( mesh, 0, transform.position, Quaternion.identity, 1.4f * Vector3.one );
+        Gizmos.color = new Color( 1f, 1f, 1f, 0.05f );
+        Gizmos.DrawWireMesh( mesh, 0, transform.position, Quaternion.identity, 1.8f * Vector3.one );
     }
 }
