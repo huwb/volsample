@@ -39,7 +39,7 @@ Shader "VolSample/Clouds Struct 3D Biplane" {
 	v2fd vert( appdata_img v )
 	{
 		v2fd o;
-		o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+		o.pos = UnityObjectToClipPos( v.vertex );
 		
 		o.uv = v.texcoord.xy;
 		o.uv.y = 1.0 - o.uv.y;
