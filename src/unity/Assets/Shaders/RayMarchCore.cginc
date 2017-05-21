@@ -1,3 +1,40 @@
+// Implementation of some different raymarch approaches
+
+////////////////////////////////////////////////////////////////////////
+// Shared - code for each raymarch step
+
+void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
+{
+	if( sum.a <= 0.99 )
+	{
+		float4 col = VolumeSampleColor( pos );
+
+		// dt = sqrt(dt / 5) * 5; // hack to soften and brighten
+		sum += wt * dt * col * (1.0 - sum.a);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+// Standard raymarching
+
+float4 RayMarchFixedZ( in float3 ro, in float3 rd )
+{
+	float4 sum = (float4)0.;
+
+	// setup sampling
+	float dt = SAMPLE_PERIOD, t = dt;
+
+	for( int i = 1; i < SAMPLE_COUNT - 1; i++ )
+	{
+		RaymarchStep( ro + t * rd, dt, 1., sum );
+		t += dt;
+	}
+
+	return saturate( sum );
+}
+
+////////////////////////////////////////////////////////////////////////
+// Structured volume sampling
 
 void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, out float dt )
 {
@@ -13,17 +50,6 @@ void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, ou
 	// fmod gives different results depending on if the arg is negative or positive. this line makes it consistent,
 	// and ensures the first sample is in front of the viewer
 	if( t_0 < 0. ) t_0 += dt;
-}
-
-void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
-{
-	if( sum.a <= 0.99 )
-	{
-		float4 col = VolumeSampleColor( pos );
-
-		// dt = sqrt(dt / 5) * 5; // hack to soften and brighten
-		sum += wt * dt * col * (1.0 - sum.a);
-	}
 }
 
 float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in const int RAYS )
@@ -80,22 +106,6 @@ float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n
 	else if( RAYS == 2 ) sum.b *= 0.;
 	else sum.gb *= 0.;
 	#endif
-
-	return saturate( sum );
-}
-
-float4 RayMarchFixedZ( in float3 ro, in float3 rd )
-{
-	float4 sum = (float4)0.;
-
-	// setup sampling
-	float dt = SAMPLE_PERIOD, t = dt;
-
-	for( int i = 1; i < SAMPLE_COUNT - 1; i++ )
-	{
-		RaymarchStep( ro + t * rd, dt, 1., sum );
-		t += dt;
-	}
 
 	return saturate( sum );
 }

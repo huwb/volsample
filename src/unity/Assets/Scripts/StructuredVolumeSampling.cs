@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Drives the volume render.
+/// </summary>
 [ExecuteInEditMode]
 [RequireComponent( typeof( Camera ), typeof( PlatonicSolidBlend ) )]
 public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEffectsBase

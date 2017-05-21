@@ -1,6 +1,12 @@
 ﻿
+// Standard raymarching - samples are placed on parallel planes that are orthogonal to the view z axis. Samples
+// are stationary in view space (move with the camera).
+
+// An alternative would be Fixed-R sampling (samples placed on concentric spheres emanating from the viewer position).
+// This layout works better for camera rotations but breaks down for sideways and up/down camera motion.
+
 Shader "VolSample/Fixed-Z Volume Sampling" {
-	Properties {
+	Properties{
 	}
 	
 	CGINCLUDE;
@@ -36,18 +42,18 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 		float4 screenPos : TEXCOORD1;
 	};
 
-	v2fd vert(appdata_full v )
+	v2fd vert( appdata_full v )
 	{
 		v2fd o;
 
 		// place the mesh camera-centered.
 		o.pos = mul( UNITY_MATRIX_VP, float4(100.0 * v.vertex.xyz + _WorldSpaceCameraPos, v.vertex.w) );
-		o.screenPos = ComputeScreenPos(o.pos);
+		o.screenPos = ComputeScreenPos( o.pos );
 
 		return o;
 	}
 
-	float3 combineColors(in float4 clouds, in float3 ro, in float3 rd)
+	float3 combineColors( in float4 clouds, in float3 ro, in float3 rd )
 	{
 		float3 col = clouds.rgb;
 
@@ -84,45 +90,45 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 	}
 
 	ENDCG
-	
-Subshader {
 
-	Tags { "Queue" = "Transparent-1" }
+	Subshader
+	{
 
-	// Pass 0: One blend weight
-	Pass {
-		ZTest Always Cull Off ZWrite Off
+		Tags{ "Queue" = "Transparent-1" }
 
-		CGPROGRAM
-		#pragma target 3.0   
-		#pragma vertex vert
-		#pragma fragment frag
-		ENDCG
+			// There are three passes here just like the structured sampling case. Each pass represents a component of a bevelled dodecahedron.
+			// For this Fixed-Z sampling, the geometry is irrelevant and the same pass is used for each component. A full screen quad/triangle would
+			// be more officient but it is left like this for simplicity.
+
+			Pass{
+			ZTest Always Cull Off ZWrite Off
+
+			CGPROGRAM
+			#pragma target 3.0   
+			#pragma vertex vert
+			#pragma fragment frag
+			ENDCG
+		}
+			Pass{
+			ZTest Always Cull Off ZWrite Off
+
+			CGPROGRAM
+			#pragma target 3.0   
+			#pragma vertex vert
+			#pragma fragment frag
+			ENDCG
+		}
+			Pass{
+			ZTest Always Cull Off ZWrite Off
+
+			CGPROGRAM
+			#pragma target 3.0   
+			#pragma vertex vert
+			#pragma fragment frag
+			ENDCG
+		}
 	}
 
-	// Pass 1: Two blend weights
-	Pass {
-		ZTest Always Cull Off ZWrite Off
+	Fallback off
 
-		CGPROGRAM
-		#pragma target 3.0   
-		#pragma vertex vert
-		#pragma fragment frag
-		ENDCG
-	}
-
-	// Pass 2: Three blend weights
-	Pass {
-		ZTest Always Cull Off ZWrite Off
-
-		CGPROGRAM
-		#pragma target 3.0   
-		#pragma vertex vert
-		#pragma fragment frag
-		ENDCG
-	}
-}
-
-Fallback off
-	
 } // shader

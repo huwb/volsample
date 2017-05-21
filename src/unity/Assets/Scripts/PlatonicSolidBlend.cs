@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Constructs a beveled dodecahedron with normals and blend weights written into verts.
+/// </summary>
 [ExecuteInEditMode]
 public class PlatonicSolidBlend : MonoBehaviour
 {

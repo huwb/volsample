@@ -1,5 +1,6 @@
+// Shared shader code for pixel view rays, given screen pos and camera frame vectors.
 
-// passed in as this shader is run from a post proc camera
+// Camera vectors are passed in as this shader is run from a post proc camera, so the unity built-in values are not useful.
 //uniform float3 _CamPos;
 uniform float3 _CamForward;
 uniform float3 _CamRight;
