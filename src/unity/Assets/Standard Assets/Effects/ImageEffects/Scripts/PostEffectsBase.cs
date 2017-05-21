@@ -14,8 +14,9 @@ namespace UnityStandardAssets.ImageEffects
 		{
             if (!s)
 			{
-                Debug.Log("Missing shader in " + ToString ());
-                enabled = false;
+                // HB stop disabling the script and spamming the log! not helpful!
+                //Debug.Log( "Missing shader in " + ToString() );
+                //enabled = false;
                 return null;
             }
 

@@ -26,7 +26,7 @@ void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 	}
 }
 
-float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in const int RAYS )
+float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in const int RAYS )
 {
 	float4 sum0, sum1, sum2;
 	sum0 = sum1 = sum2 = (float4)0.;
@@ -80,6 +80,22 @@ float4 DoRaymarch( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in fl
 	else if( RAYS == 2 ) sum.b *= 0.;
 	else sum.gb *= 0.;
 	#endif
+
+	return saturate( sum );
+}
+
+float4 RayMarchFixedZ( in float3 ro, in float3 rd )
+{
+	float4 sum = (float4)0.;
+
+	// setup sampling
+	float dt = SAMPLE_PERIOD, t = dt;
+
+	for( int i = 1; i < SAMPLE_COUNT - 1; i++ )
+	{
+		RaymarchStep( ro + t * rd, dt, 1., sum );
+		t += dt;
+	}
 
 	return saturate( sum );
 }

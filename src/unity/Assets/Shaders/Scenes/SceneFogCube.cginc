@@ -49,7 +49,7 @@ float4 VolumeSampleColor( in float3 pos )
 	if( sr < sphereR + feather*.5 )
 		dens *= saturate( (sr - (sphereR-.5*feather)) / feather );
 
-	dens *= noise( pos - float3(.1,.5,.1)* _Time.w );
+	//dens *= noise( pos - float3(.1,.5,.1)* _Time.w );
 
 	float col = .15 * dens;
 	float a = dens * .1;
