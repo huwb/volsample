@@ -1,4 +1,5 @@
-﻿
+﻿// This is a flatland 2D implementation of the structured sampling (samples on planes that are orthogonal to XZ plane)
+
 Shader "VolSample/Clouds Struct Flatland" {
 	Properties {
 	}

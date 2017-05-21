@@ -1,5 +1,5 @@
 ﻿
-Shader "VolSample/Clouds Struct 3D" {
+Shader "VolSample/Structured Volume Sampling" {
 	Properties {
 	}
 	
