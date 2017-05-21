@@ -1,7 +1,7 @@
 
 # volsample
 
-Research on sampling methods for real-time volume rendering.
+MIT-licensed volume rendering research framework.
 
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)  
 Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/volrender_800x450_30fps.mp4).
@@ -9,7 +9,7 @@ Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
-Contacts: Huw Bowles (@hdb1), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (bebei dot wang at gmail dot com)
+Contacts: Huw Bowles (@hdb1 , huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (bebei dot wang at gmail dot com)
 
 Retweet to support this work: https://twitter.com/hdb1/status/769615284672028672  
 
@@ -28,9 +28,13 @@ Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
 ## Running
 
-This is implemented as a Unity 5 project (last run on 5.5) and should "just work" without requiring any set up steps. It should be very easily ported to other Unity versions as well.
+This is implemented as a Unity 5 project (last run on 5.6) and should "just work" without requiring any set up steps. It should be very easily ported to other Unity versions as well.
 
-The main scene is *CloudsStructured.unity*. The cloud render should already work in the editor. Press play and the Animator component on the camera will play our test animation if it is enabled.
+The main scene is *main.unity*. The cloud render should already work in the editor. Press play and the Animator component on the camera will play our test animation if it is enabled.
+
+Two volume samplers are supported, selectable from the on screen GUI in Play mode. The fixed Z sampler is standard raymarching and is defined in *FixedZVolumeSampling.shader*. The new structured sampling technique is defined in *StructuredVolumeSampling.shader*.
+
+The volume that is rendered depends on which scene shader is included in these two shaders. The default scene is *Scenes/SceneClouds.cginc* which corresponds to the screenshot above.
 
 
 ## Algorithm
@@ -47,13 +51,6 @@ We generate a dodecahedron at run time around the camera, and rasterize it to se
 For understanding it may help to enable the define *DEBUG_BEVEL* and play with the Bevel amount on the Platonic Solid Blend script. Doing a GPU trace capture in unity can also be helpful to see the dodecahedron.
 
 We hope to publish a full description of this technique soon. Stay tuned!
-
-
-## Troubleshooting
-
-You may run into the following:
-
-* If you see just the standard sky box render in the camera view, re-enable the *CloudsStructure3D* script on the camera. If it auto disables itself when you enable it, look in the log for shader errors. If none are visible they may have already been cleared - perhaps try touching the shader file or restarting Unity.
 
 
 ## Bugs and improvement directions
