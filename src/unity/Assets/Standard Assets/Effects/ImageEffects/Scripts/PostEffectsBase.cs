@@ -24,8 +24,9 @@ namespace UnityStandardAssets.ImageEffects
 
             if (!s.isSupported)
 			{
-                NotSupported ();
-                Debug.Log("The shader " + s.ToString() + " on effect "+ToString()+" is not supported on this platform!");
+                // HB this also happens on compile errors (on unity 5.5/5.6 at least). commenting this out.
+                //NotSupported ();
+                //Debug.Log("The shader " + s.ToString() + " on effect "+ToString()+" is not supported on this platform!");
                 return null;
             }
             else

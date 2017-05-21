@@ -10,16 +10,9 @@ public abstract class CloudsBase : UnityStandardAssets.ImageEffects.PostEffectsB
 
 	public override bool CheckResources()
 	{
-		CheckSupport( true );
-		
 		cloudsMaterial = CheckShaderAndCreateMaterial( cloudsShader, cloudsMaterial );
-		
-		SetCameraFlag();
-		
-		if( !isSupported )
-			ReportAutoDisable();
 
-		return isSupported;
+        return true;
 	}
 	
 	void OnEnable()

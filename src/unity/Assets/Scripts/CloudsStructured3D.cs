@@ -4,6 +4,9 @@ public class CloudsStructured3D : CloudsBase
 {
 	protected override void RenderSetupInternal()
 	{
+        if( !cloudsMaterial )
+            return;
+
         // we can't just read these from the matrices because the clouds are rendered with a post proc camera
 		cloudsMaterial.SetVector( "_CamPos", transform.position );
 		cloudsMaterial.SetVector( "_CamForward", transform.forward );
@@ -31,7 +34,7 @@ public class CloudsStructured3D : CloudsBase
 
         // Grab the geometry from the PlatonicSolidBlend component.
         var platonicSolid = GetComponent<PlatonicSolidBlend>();
-        if (platonicSolid)
+        if( platonicSolid && cloudsMaterial )
         {
             var platonicMesh = platonicSolid.mesh;
 
