@@ -31,18 +31,13 @@ Shader "VolSample/Structured Volume Sampling" {
 		float3 blendWeights : COLOR;
 	};
 
-	// passed in as this shader is run from a post proc camera
-	//uniform float3 _CamPos;
-	uniform float3 _CamForward;
-	uniform float3 _CamRight;
-	uniform float  _HalfFov;
-
 	uniform sampler2D _CameraDepthTexture;
 
 	#include "Scenes/SceneClouds.cginc"
 	//#include "Scenes/SceneFogCube.cginc"
 
 	#include "RayMarchCore.cginc"
+	#include "Camera.cginc"
 
 	float3 DecodeNormalFromUV(float2 uv)
 	{
@@ -69,15 +64,6 @@ Shader "VolSample/Structured Volume Sampling" {
 		// pass on the blend weights from the color channel
 		o.blendWeights = v.color.rgb;
 		return o;
-	}
-
-	void computeCamera(in float2 screenPos, out float3 ro, out float3 rd)
-	{
-		float fovH = tan(_HalfFov);
-		float fovV = tan(_HalfFov * _ScreenParams.y / _ScreenParams.x);
-		float3 camUp = cross(_CamForward.xyz, _CamRight.xyz);
-		ro = _WorldSpaceCameraPos;
-		rd = normalize(_CamForward.xyz + screenPos.y * fovV * camUp + screenPos.x * fovH * _CamRight.xyz);
 	}
 
 	float3 combineColors(in float4 clouds, in float3 ro, in float3 rd)
