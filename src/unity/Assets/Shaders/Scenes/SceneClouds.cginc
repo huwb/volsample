@@ -50,7 +50,7 @@ float4 VolumeSampleColor( in float3 pos )
 	return col;
 }
 
-float3 skyColor( float3 rd )
+float3 skyColor( in float3 ro, in float3 rd )
 {
 	float3 col = (float3)0.;
 

@@ -39,7 +39,8 @@ Shader "VolSample/Clouds Struct 3D" {
 
 	uniform sampler2D _CameraDepthTexture;
 
-	#include "SceneClouds.cginc"
+	#include "Scenes/SceneClouds.cginc"
+
 	#include "RayMarchCore.cginc"
 
 	float3 DecodeNormalFromUV(float2 uv)
@@ -78,7 +79,7 @@ Shader "VolSample/Clouds Struct 3D" {
 		rd = normalize(_CamForward.xyz + screenPos.y * fovV * camUp + screenPos.x * fovH * _CamRight.xyz);
 	}
 
-	float3 combineColors(in float4 clouds, in float3 rd)
+	float3 combineColors(in float4 clouds, in float3 ro, in float3 rd)
 	{
 		float3 col = clouds.rgb;
 
@@ -86,7 +87,7 @@ Shader "VolSample/Clouds Struct 3D" {
 		if( clouds.a < 0.99 )
 		{
 			// let some of the sky light through
-			col += skyColor( rd ) * (1. - clouds.a);
+			col += skyColor( ro, rd ) * (1. - clouds.a);
 		}
 
 		return col;
@@ -105,7 +106,7 @@ Shader "VolSample/Clouds Struct 3D" {
 		float4 clouds = DoRaymarch( ro, rd, i.normal0, i.normal1, i.normal2, i.blendWeights, RAYS );
 
 		// combine with background
-		float3 col = combineColors( clouds, rd );
+		float3 col = combineColors( clouds, ro, rd );
 
 		// post processing
 		return postProcessing( col, q );
