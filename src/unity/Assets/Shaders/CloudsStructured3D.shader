@@ -40,6 +40,7 @@ Shader "VolSample/Clouds Struct 3D" {
 	uniform sampler2D _CameraDepthTexture;
 
 	#include "Scenes/SceneClouds.cginc"
+	//#include "Scenes/SceneFogCube.cginc"
 
 	#include "RayMarchCore.cginc"
 
