@@ -17,16 +17,22 @@ void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 ////////////////////////////////////////////////////////////////////////
 // Standard raymarching
 
-float4 RayMarchFixedZ( in float3 ro, in float3 rd )
+float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 {
 	float4 sum = (float4)0.;
 
 	// setup sampling
 	float dt = SAMPLE_PERIOD, t = dt;
 
-	for( int i = 1; i < SAMPLE_COUNT - 1; i++ )
+	for( int i = 0; i < SAMPLE_COUNT; i++ )
 	{
-		RaymarchStep( ro + t * rd, dt, 1., sum );
+		float distToSurf = zbuf - t;
+		if( distToSurf <= 0.001 ) break;
+
+		float wt = (distToSurf >= dt) ? 1. : distToSurf / dt;
+
+		RaymarchStep( ro + t * rd, dt, wt, sum );
+
 		t += dt;
 	}
 
@@ -52,7 +58,7 @@ void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, ou
 	if( t_0 < 0. ) t_0 += dt;
 }
 
-float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in const int RAYS )
+float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in float depth, in const int RAYS )
 {
 	float4 sum0, sum1, sum2;
 	sum0 = sum1 = sum2 = (float4)0.;
@@ -63,35 +69,59 @@ float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n
 	if( RAYS > 1 )  IntersectPlanes( n1, ro, rd, t[1], dt[1] );
 	if( RAYS > 2 )  IntersectPlanes( n2, ro, rd, t[2], dt[2] );
 
-
-	// this blends samples in / out at near/far extents
-	float3 firstWt = t / dt;
-
+	// pretend there is an invisible wall at the end of the ray - this serves to fade samples in/out at far extent
+	float3 zbuf = min( depth, dt * SAMPLE_COUNT );
 
 	// take first sample for each plane
+	float3 firstWt = t / dt;
 					RaymarchStep( ro + t[0] * rd, dt[0], firstWt[0], sum0 );
 	if( RAYS > 1 )  RaymarchStep( ro + t[1] * rd, dt[1], firstWt[1], sum1 );
 	if( RAYS > 2 )  RaymarchStep( ro + t[2] * rd, dt[2], firstWt[2], sum2 );
 	t += dt;
-	
 
 	// take interior samples for each plane
-	for( int i = 1; i < SAMPLE_COUNT-1; i++ )
+	for( int i = 1; i < SAMPLE_COUNT; i++ )
 	{
-						RaymarchStep( ro + t[0] * rd, dt[0], 1., sum0 );
-		if( RAYS > 1 )  RaymarchStep( ro + t[1] * rd, dt[1], 1., sum1 );
-		if( RAYS > 2 )  RaymarchStep( ro + t[2] * rd, dt[2], 1., sum2 );
+		bool stillSampling = false;
+
+		if( RAYS > 0 )
+		{
+			float dts0 = zbuf[0] - t[0];
+			float swt = (dts0 >= dt[0]) ? 1. : dts0 / dt[0];
+			if( swt > 0.001 )
+			{
+				RaymarchStep( ro + t[0] * rd, dt[0], swt, sum0 );
+				stillSampling = true;
+			}
+		}
+
+		if( RAYS > 1 )
+		{
+			float dts1 = zbuf[1] - t[1];
+			float swt = (dts1 >= dt[1]) ? 1. : dts1 / dt[1];
+			if( swt > 0.001 )
+			{
+				RaymarchStep( ro + t[1] * rd, dt[1], swt, sum1 );
+				stillSampling = true;
+			}
+		}
+
+		if( RAYS > 2 )
+		{
+			float dts2 = zbuf[2] - t[2];
+			float swt = (dts2 >= dt[2]) ? 1. : dts2 / dt[2];
+			if( swt > 0.001 )
+			{
+				RaymarchStep( ro + t[2] * rd, dt[2], swt, sum2 );
+				stillSampling = true;
+			}
+		}
+
+		if( !stillSampling )
+			break;
+
 		t += dt;
 	}
-
-
-	// take last sample for each plane
-					RaymarchStep( ro + t[0] * rd, dt[0], 1.-firstWt[0], sum0 );
-	if( RAYS > 1 )  RaymarchStep( ro + t[1] * rd, dt[1], 1.-firstWt[1], sum1 );
-	if( RAYS > 2 )  RaymarchStep( ro + t[2] * rd, dt[2], 1.-firstWt[2], sum2 );
-	t += dt;
-
-
 
 	// blend rays
 	float4 sum = wt[0] * sum0;

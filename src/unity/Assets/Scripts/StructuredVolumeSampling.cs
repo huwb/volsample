@@ -82,30 +82,39 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
         // for generating rays
         _volMaterial.SetFloat( "_HalfFov", halfFov_horiz_rad );
 
-        // Grab the geometry from the PlatonicSolidBlend component.
-        var platonicSolid = GetComponent<PlatonicSolidBlend>();
-        if( platonicSolid )
+        if( !_activeVolShader.name.ToLower().Contains( "structured" ) )
         {
-            var platonicMesh = platonicSolid.mesh;
-
-            if (platonicMesh)
+            Graphics.Blit( source, destination, _volMaterial );
+        }
+        else
+        {
+            // Grab the geometry from the PlatonicSolidBlend component.
+            var platonicSolid = GetComponent<PlatonicSolidBlend>();
+            if( platonicSolid )
             {
-                Graphics.SetRenderTarget(destination);
+                var platonicMesh = platonicSolid.mesh;
 
-                // Pass 0: One blend weight.
-                // Draw the faces of the beveled dodecahedron.
-                _volMaterial.SetPass(0);
-                Graphics.DrawMeshNow(platonicMesh, Matrix4x4.identity, 0);
+                if( platonicMesh )
+                {
+                    _volMaterial.SetTexture( "_MainTex", source );
 
-                // Pass 1: Two blend weights.
-                // Draw the edges of the beveled dodecahedron.
-                _volMaterial.SetPass(1);
-                Graphics.DrawMeshNow(platonicMesh, Matrix4x4.identity, 1);
+                    Graphics.SetRenderTarget( destination );
 
-                // Pass 2: Three blend weights.
-                // Draw the vertices of the beveled dodecahedron.
-                _volMaterial.SetPass(2);
-                Graphics.DrawMeshNow(platonicMesh, Matrix4x4.identity, 2);
+                    // Pass 0: One blend weight.
+                    // Draw the faces of the beveled dodecahedron.
+                    _volMaterial.SetPass( 0 );
+                    Graphics.DrawMeshNow( platonicMesh, Matrix4x4.identity, 0 );
+
+                    // Pass 1: Two blend weights.
+                    // Draw the edges of the beveled dodecahedron.
+                    _volMaterial.SetPass( 1 );
+                    Graphics.DrawMeshNow( platonicMesh, Matrix4x4.identity, 1 );
+
+                    // Pass 2: Three blend weights.
+                    // Draw the vertices of the beveled dodecahedron.
+                    _volMaterial.SetPass( 2 );
+                    Graphics.DrawMeshNow( platonicMesh, Matrix4x4.identity, 2 );
+                }
             }
         }
     }

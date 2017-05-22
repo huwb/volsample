@@ -7,6 +7,7 @@
 
 Shader "VolSample/Fixed-Z Volume Sampling" {
 	Properties{
+		_MainTex( "", 2D ) = "white" {}
 	}
 	
 	CGINCLUDE;
@@ -28,6 +29,7 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 	// debug weights
 	#define DEBUG_WEIGHTS 0
 
+	uniform sampler2D _MainTex;
 	uniform sampler2D _CameraDepthTexture;
 
 	#include "Scenes/SceneClouds.cginc"
@@ -36,20 +38,17 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 	#include "RayMarchCore.cginc"
 	#include "Camera.cginc"
 
-	struct v2fd
+	struct v2f
 	{
 		float4 pos : SV_POSITION;
 		float4 screenPos : TEXCOORD1;
 	};
 
-	v2fd vert( appdata_full v )
+	v2f vert( appdata_base v )
 	{
-		v2fd o;
-
-		// place the mesh camera-centered.
-		o.pos = mul( UNITY_MATRIX_VP, float4(100.0 * v.vertex.xyz + _WorldSpaceCameraPos, v.vertex.w) );
+		v2f o;
+		o.pos = UnityObjectToClipPos( v.vertex );
 		o.screenPos = ComputeScreenPos( o.pos );
-
 		return o;
 	}
 
@@ -67,7 +66,7 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 		return col;
 	}
 	
-	float4 frag( v2fd i ) : SV_Target
+	float4 frag( v2f i ) : SV_Target
 	{
 		float2 q = i.screenPos.xy / i.screenPos.w;
 		float2 p = 2.0*(q - 0.5);
@@ -79,10 +78,21 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 		// fixed-Z sampling (instead of fixed-R sampling)
 		float3 rdFixedZ = rd / dot( rd, _CamForward );
 
-		// march through volume
-		float4 clouds = RayMarchFixedZ( ro, rdFixedZ );
+		// z buffer / scene depth for this pixel
+		float depthValue = LinearEyeDepth( tex2Dproj( _CameraDepthTexture, UNITY_PROJ_COORD( i.screenPos ) ).r );
 
-		// combine with background
+		// march through volume
+		float4 clouds = RayMarchFixedZ( ro, rdFixedZ, depthValue );
+
+		// add in camera render colours, if not zfar (so we exclude skybox)
+		if( depthValue <= 999. )
+		{
+			float3 bgcol = tex2D( _MainTex, i.screenPos.xy );
+			clouds.xyz += (1. - clouds.a) * bgcol;
+			// assume zbuffer represents opaque surface
+			clouds.a = 1.;
+		}
+		
 		float3 col = combineColors( clouds, ro, rd );
 
 		// post processing
@@ -93,8 +103,7 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 
 	Subshader
 	{
-
-		Tags{ "Queue" = "Transparent-1" }
+		Tags{ "RenderType" = "Opaque" }
 
 			// There are three passes here just like the structured sampling case. Each pass represents a component of a bevelled dodecahedron.
 			// For this Fixed-Z sampling, the geometry is irrelevant and the same pass is used for each component. A full screen quad/triangle would

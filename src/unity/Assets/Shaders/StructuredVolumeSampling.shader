@@ -1,6 +1,8 @@
-﻿
+﻿// New technique - samples are placed on fixed world-space planes
+
 Shader "VolSample/Structured Volume Sampling" {
 	Properties {
+		_MainTex( "", 2D ) = "white" {}
 	}
 	
 	CGINCLUDE;
@@ -31,6 +33,7 @@ Shader "VolSample/Structured Volume Sampling" {
 		float3 blendWeights : COLOR;
 	};
 
+	uniform sampler2D _MainTex;
 	uniform sampler2D _CameraDepthTexture;
 
 	#include "Scenes/SceneClouds.cginc"
@@ -63,6 +66,7 @@ Shader "VolSample/Structured Volume Sampling" {
 
 		// pass on the blend weights from the color channel
 		o.blendWeights = v.color.rgb;
+
 		return o;
 	}
 
@@ -82,6 +86,7 @@ Shader "VolSample/Structured Volume Sampling" {
 	
 	float4 frag( v2fd i, in const int RAYS ) : SV_Target
 	{
+
 		float2 q = i.screenPos.xy / i.screenPos.w;
 		float2 p = 2.0*(q - 0.5);
 
@@ -89,8 +94,20 @@ Shader "VolSample/Structured Volume Sampling" {
 		float3 ro, rd;
 		computeCamera( p, ro, rd );
 
+		// z buffer / scene depth for this pixel
+		float depthValue = LinearEyeDepth( tex2Dproj( _CameraDepthTexture, UNITY_PROJ_COORD( i.screenPos ) ).r );
+
 		// march through volume
-		float4 clouds = RaymarchStructured( ro, rd, i.normal0, i.normal1, i.normal2, i.blendWeights, RAYS );
+		float4 clouds = RaymarchStructured( ro, rd, i.normal0, i.normal1, i.normal2, i.blendWeights, depthValue, RAYS );
+
+		// add in camera render colours, if not zfar (so we exclude skybox)
+		if( depthValue <= 999. )
+		{
+			float3 bgcol = tex2D( _MainTex, q );
+			clouds.xyz += (1. - clouds.a) * bgcol;
+			// assume zbuffer represents opaque surface
+			clouds.a = 1.;
+		}
 
 		// combine with background
 		float3 col = combineColors( clouds, ro, rd );

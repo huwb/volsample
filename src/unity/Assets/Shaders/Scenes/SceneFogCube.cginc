@@ -41,8 +41,7 @@ float4 VolumeSampleColor( in float3 pos )
 	float R = 5.;
 	float dens = 1. - smoothstep( R - feather, R, maxExtent );
 	// cut floor
-	if( pos.y < feather )
-		dens *= saturate( pos.y / feather );
+	if( pos.y < 0. ) dens *= 0.;
 
 	float sphereR = 3.5;
 	float sr = length( pos );
