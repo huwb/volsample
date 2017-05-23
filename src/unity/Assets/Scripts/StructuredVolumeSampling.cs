@@ -14,9 +14,13 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
 
     public Shader[] _volShaders;
 
+    float _forwardMotionIntegrated = 0f;
+    Vector3 _lastPos;
+
     void OnEnable()
     {
         GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;
+        _lastPos = transform.position;
     }
 
     void OnGUI()
@@ -53,6 +57,12 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
         GUI.enabled = guiEn;
     }
 
+    void LateUpdate()
+    {
+        _forwardMotionIntegrated += Vector3.Dot( transform.position - _lastPos, transform.forward );
+        _lastPos = transform.position;
+    }
+
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
@@ -81,6 +91,9 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
 
         // for generating rays
         _volMaterial.SetFloat( "_HalfFov", halfFov_horiz_rad );
+
+        // for pinned sampling
+        _volMaterial.SetFloat( "_ForwardMotionIntegrated", _forwardMotionIntegrated );
 
         if( !_activeVolShader.name.ToLower().Contains( "structured" ) )
         {

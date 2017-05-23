@@ -40,6 +40,37 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Standard raymarching but pinned in Z - samples move to compensate forward motion
+
+uniform float _ForwardMotionIntegrated;
+
+float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
+{
+	float4 sum = (float4)0.;
+
+	// setup sampling
+	float dt = SAMPLE_PERIOD;
+	float t = dt - fmod( _ForwardMotionIntegrated, dt );
+
+	// add invisible wall at sample extents as a tool to fade samples out at distance
+	zbuf = min( zbuf, dt * SAMPLE_COUNT );
+
+	for( int i = 0; i < SAMPLE_COUNT; i++ )
+	{
+		float distToSurf = zbuf - t;
+		if( distToSurf <= 0.001 ) break;
+
+		float wt = (distToSurf >= dt) ? 1. : distToSurf / dt;
+
+		RaymarchStep( ro + t * rd, dt, wt, sum );
+
+		t += dt;
+	}
+
+	return saturate( sum );
+}
+
+////////////////////////////////////////////////////////////////////////
 // Structured volume sampling
 
 void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, out float dt )
