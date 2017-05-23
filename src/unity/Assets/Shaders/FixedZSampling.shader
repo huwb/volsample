@@ -87,12 +87,6 @@ Shader "VolSample/Fixed-Z Sampling" {
 
 	Subshader
 	{
-		Tags{ "RenderType" = "Opaque" }
-
-			// There are three passes here just like the structured sampling case. Each pass represents a component of a bevelled dodecahedron.
-			// For this Fixed-Z sampling, the geometry is irrelevant and the same pass is used for each component. A full screen quad/triangle would
-			// be more officient but it is left like this for simplicity.
-
 		Pass
 		{
 			ZTest Always Cull Off ZWrite Off

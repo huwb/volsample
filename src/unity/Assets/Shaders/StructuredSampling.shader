@@ -2,7 +2,6 @@
 
 Shader "VolSample/Structured Sampling" {
 	Properties {
-		_MainTex( "", 2D ) = "white" {}
 	}
 	
 	CGINCLUDE;
@@ -28,10 +27,10 @@ Shader "VolSample/Structured Sampling" {
 
 	float3 DecodeNormalFromUV(float2 uv)
 	{
-		float2 fEnc = uv * 4 - 2;
+		float2 fEnc = uv * 4.0 - 2.0;
 		float f = dot(fEnc, fEnc);
-		float g = sqrt(1 - f / 4);
-		return float3(fEnc * g, 1 - f / 2);
+		float g = sqrt(1 - f / 4.0);
+		return float3(fEnc * g, 1 - f / 2.0);
 	}
 	
 	v2fd vert(appdata_full v )
@@ -107,8 +106,6 @@ Shader "VolSample/Structured Sampling" {
 	ENDCG
 	
 Subshader {
-
-	Tags { "Queue" = "Transparent-1" }
 
 	// Pass 0: One blend weight
 	Pass {

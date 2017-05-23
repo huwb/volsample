@@ -103,7 +103,8 @@ float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n
 	// pretend there is an invisible wall at the end of the ray - this serves to fade samples in/out at far extent
 	float3 zbuf = min( depth, dt * SAMPLE_COUNT );
 
-	// take first sample for each plane
+	// take first sample for each plane - this sample is weighted to blend in/out. normally this would be optional, but we
+	// sometimes found disturbing pentagon-shaped artifacts originating from the dodec geometry if we didn't fade these carefully.
 	float3 firstWt = t / dt;
 					RaymarchStep( ro + t[0] * rd, dt[0], firstWt[0], sum0 );
 	if( RAYS > 1 )  RaymarchStep( ro + t[1] * rd, dt[1], firstWt[1], sum1 );
