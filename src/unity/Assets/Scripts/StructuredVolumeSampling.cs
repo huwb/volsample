@@ -9,16 +9,26 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
 {
     public Texture2D _textureNoise;
 
-    public Shader _activeVolShader;
+    public Shader _volShader;
     Material _volMaterial = null;
-
-    public Shader[] _volShaders;
 
     [Tooltip("Optional - shadow rendering camera to read shadows from.")]
     public Camera _shadowCamera;
 
     float _forwardMotionIntegrated = 0f;
     Vector3 _lastPos;
+
+    public bool _structuredSampling = true;
+    public bool _fixedZPinned = true;
+
+    public enum Scene
+    {
+        SCENE_CLOUDS = 0,
+        SCENE_SPONZA,
+        SCENE_OTHER,
+        SCENE_COUNT,
+    }
+    public Scene _scene;
 
     void OnEnable()
     {
@@ -37,25 +47,7 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
             GUI.enabled = false;
 #endif
 
-        float b = 5f, h = 25f;
-        var rect = new Rect( b, b, 200f, h );
-        for( int si = 0; si < _volShaders.Length; si++ )
-        {
-            var name = _volShaders[si].name;
-            name = name.Substring( 1 + name.LastIndexOf( '/' ) );
-
-            if( _volShaders[si] != _activeVolShader )
-                GUI.color = Color.gray;
-
-            if( GUI.Button( rect, name ) )
-            {
-                _activeVolShader = _volShaders[si];
-            }
-
-            rect.y += h + b;
-
-            GUI.color = guiCol;
-        }
+        // TODO - put display render options
 
         GUI.enabled = guiEn;
     }
@@ -66,16 +58,28 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
         _lastPos = transform.position;
     }
 
+    void SetKeyword( string keyword, bool en )
+    {
+        if( _volMaterial == null )
+            return;
+
+        if( en )
+            _volMaterial.EnableKeyword( keyword );
+        else
+            _volMaterial.DisableKeyword( keyword );
+    }
+
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        // if no vol shader selected, select first one
-        if( _activeVolShader == null && _volShaders.Length > 0 )
+        _volMaterial = CheckShaderAndCreateMaterial( _volShader, _volMaterial );
+        SetKeyword( "STRUCTURED_SAMPLING", _structuredSampling );
+        SetKeyword( "FIXEDZ_PINSAMPLES", _fixedZPinned );
+        for( int i = 0; i < (int)Scene.SCENE_COUNT; i++ )
         {
-            _activeVolShader = _volShaders[0];
+            Scene scenei = (Scene)i;
+            SetKeyword( scenei.ToString(), scenei == _scene );
         }
-
-        _volMaterial = CheckShaderAndCreateMaterial( _activeVolShader, _volMaterial );
 
         // check for no shader / shader compile error
         if( _volMaterial == null )
@@ -107,9 +111,9 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
             _volMaterial.SetTexture( "_ShadowCameraDepths", _shadowCamera.targetTexture );
         }
 
-        if( !_activeVolShader.name.ToLower().Contains( "structured" ) )
+        if( !_structuredSampling )
         {
-            Graphics.Blit( source, destination, _volMaterial );
+            Graphics.Blit( source, destination, _volMaterial, 0 );
         }
         else
         {

@@ -51,7 +51,7 @@ float4 VolumeSampleColor( in float3 pos )
 
 	float light = Spotlight( pos );
 
-	float col = lerp( 0.0, .15, light ) * dens;
+	float col = lerp( 0.05, .15, light ) * dens;
 	float a = dens * .1;
 
 	return float4((float3)col, a);
