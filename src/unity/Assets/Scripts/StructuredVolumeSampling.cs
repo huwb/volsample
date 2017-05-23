@@ -47,7 +47,10 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
             GUI.enabled = false;
 #endif
 
-        // TODO - put display render options
+        _structuredSampling = GUI.Toggle( new Rect( 5f, 5f, 150f, 25f ), _structuredSampling, "Structured Sampling" );
+
+        if( !_structuredSampling )
+            _fixedZPinned = GUI.Toggle( new Rect( 5f, 30f, 150f, 25f ), _fixedZPinned, "Pin Samples" );
 
         GUI.enabled = guiEn;
     }
