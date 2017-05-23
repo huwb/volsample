@@ -66,9 +66,6 @@ float4 postProcessing( in float3 col, in float2 screenPosNorm )
 {
 	col = saturate( col );
 
-	// gamma correction
-	col = pow( col, (float3).45 );
-
 	float2 q = screenPosNorm;
 	col *= pow( 16.0*q.x*q.y*(1.0 - q.x)*(1.0 - q.y), 0.12 ); // Vignette
 
