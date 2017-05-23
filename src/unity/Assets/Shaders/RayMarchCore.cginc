@@ -48,12 +48,13 @@ float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
 {
 	float4 sum = (float4)0.;
 
-	// setup sampling
-	float dt = SAMPLE_PERIOD;
-	float t = dt - fmod( _ForwardMotionIntegrated, dt );
-
 	// add invisible wall at sample extents as a tool to fade samples out at distance
-	zbuf = min( zbuf, dt * SAMPLE_COUNT );
+	zbuf = min( zbuf, SAMPLE_PERIOD * SAMPLE_COUNT );
+
+	// setup sampling - compute first dt in a way that keeps samples stationary for
+	// camera forward motion
+	float dt = SAMPLE_PERIOD - fmod( _ForwardMotionIntegrated, SAMPLE_PERIOD );
+	float t = dt ;
 
 	for( int i = 0; i < SAMPLE_COUNT; i++ )
 	{
@@ -64,6 +65,7 @@ float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
 
 		RaymarchStep( ro + t * rd, dt, wt, sum );
 
+		dt = SAMPLE_PERIOD;
 		t += dt;
 	}
 
