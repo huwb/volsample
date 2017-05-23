@@ -5,7 +5,35 @@ public class FollowSceneCam : MonoBehaviour
 {
     public bool _apply = false;
 	
-	void OnDrawGizmos()
+    bool LiveUpdating {
+        get {
+            return
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying && !UnityEditor.EditorApplication.isPaused
+#else
+            true
+#endif
+                ;
+        }
+    }
+
+	void LateUpdate()
+    {
+        if( LiveUpdating )
+        {
+            Apply();
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        if( !LiveUpdating )
+        {
+            Apply();
+        }
+    }
+
+    void Apply()
     {
         if( _apply )
         {
