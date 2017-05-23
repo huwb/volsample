@@ -30,11 +30,9 @@ Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
 This is implemented as a Unity 5 project (last run on 5.6) and should "just work" without requiring any set up steps. It should be very easily ported to other Unity versions as well.
 
-The main scene is *main.unity*. The cloud render should already work in the editor. Press play and the Animator component on the camera will play our test animation if it is enabled.
+Find the current test scenes in the *Scenes/* folder. A few volume sampling schemes are implemented for comparison and can be selected via the on screen GUI.
 
-Two volume samplers are supported, selectable from the on screen GUI in Play mode. The fixed Z sampler is standard raymarching and is defined in *FixedZVolumeSampling.shader*. The new structured sampling technique is defined in *StructuredVolumeSampling.shader*.
-
-The volume that is rendered depends on which scene shader is included in these two shaders. The default scene is *Scenes/SceneClouds.cginc* which corresponds to the screenshot above.
+All volume sampling methods and volumetric scenes are implemented into *VolumeRender.shader*, as shader features. This is a quick and dirty way to associated shader code with unity scenes at the same time as supporting different volume sampling approaches, without requiring a ton of shader code duplications.
 
 
 ## Algorithm
