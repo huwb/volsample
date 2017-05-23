@@ -41,7 +41,6 @@ float4 VolumeSampleColor( in float3 pos )
 	float R = 5.;
 	float dens = 1. - smoothstep( R - feather, R, maxExtent );
 	// cut floor
-	if( pos.y < 0. ) dens *= 0.;
 
 	float sphereR = 3.5;
 	float sr = length( pos );
@@ -58,31 +57,7 @@ float4 VolumeSampleColor( in float3 pos )
 
 float3 skyColor( float3 ro, float3 rd )
 {
-	float dc = 0.04, lc = 0.1;
-
-	float3 col = (float3)lerp( dc, lc, 0.5 );
-
-	if( ro.y * rd.y >= -0.001 )
-		return col;
-
-	float d = -ro.y / rd.y;
-	float3 pointOnGround = ro + rd * d;
-
-	pointOnGround = frac( pointOnGround / 3. ) - .5;
-
-	float feathRaw = 0.000002 * _ScreenParams.x * d;
-	float fc = min( feathRaw, 0.25 );
-
-	float colS = 1.;
-	colS *= smoothstep( .25 - fc, .25 + fc, abs( pointOnGround.x ) );
-	colS *= smoothstep( .25 - fc, .25 + fc, abs( pointOnGround.z ) );
-
-	colS = lerp( colS, 0.5, saturate( (float3)feathRaw*10. ) );
-
-	//colS = lerp( colS, 0.5, clamp( (d-50.) / 50., 0., 1. ) );
-	col = lerp( dc, lc, colS );
-
-	return col;
+	return (float3)0.;
 }
 
 float4 postProcessing( in float3 col, in float2 screenPosNorm )
