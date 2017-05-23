@@ -44,23 +44,14 @@ float4 map( in float3 p )
 
 float4 VolumeSampleColor( in float3 pos )
 {
-	float maxExtent = max( max( abs( pos.x ), abs( pos.y ) ), abs( pos.z ) );
-	float feather = SAMPLE_PERIOD*1.5;
-	float R = 5.;
-	float dens = 1. - smoothstep( R - feather, R, maxExtent );
-	// cut floor
-
-	float sphereR = 3.5;
-	float sr = length( pos );
-	if( sr < sphereR + feather*.5 )
-		dens *= saturate( (sr - (sphereR-.5*feather)) / feather );
+	float dens = 1.;
 
 	dens *= noise( pos - float3(.1,.5,.1)* _Time.w );
 	dens *= 2.5;
 
 	float light = Spotlight( pos );
 
-	float col = lerp( 0.015, .15, light ) * dens;
+	float col = lerp( 0.0, .15, light ) * dens;
 	float a = dens * .1;
 
 	return float4((float3)col, a);
