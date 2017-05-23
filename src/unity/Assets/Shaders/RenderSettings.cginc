@@ -9,5 +9,7 @@
 // structured sampling - debug weights
 #define DEBUG_WEIGHTS 0
 
-#include "Scenes/SceneClouds.cginc"
-//#include "Scenes/SceneFogCube.cginc"
+// scene
+//#include "Scenes/SceneClouds.cginc"
+#include "Scenes/SceneFogCube.cginc"
+//#include "Scenes/SceneFogSpotlight.cginc"
