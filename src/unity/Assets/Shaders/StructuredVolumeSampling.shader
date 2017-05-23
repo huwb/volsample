@@ -7,22 +7,15 @@ Shader "VolSample/Structured Volume Sampling" {
 	
 	CGINCLUDE;
 	
+	uniform sampler2D _MainTex;
+	uniform sampler2D _CameraDepthTexture;
+
 	#include "UnityCG.cginc"
 	
-	// the number of volume samples to take
-	#define SAMPLE_COUNT 32
+	#include "RenderSettings.cginc"
 
-	// spacing between samples
-	#define SAMPLE_PERIOD 1.
-	
-	// sun direction
-	#define SUN_DIR float3(-0.70710678,0.,-.70710678)
-	
-	// debug bevel areas
-	#define DEBUG_BEVEL 0
-
-	// debug weights
-	#define DEBUG_WEIGHTS 0
+	#include "RayMarchCore.cginc"
+	#include "Camera.cginc"
 
 	struct v2fd {
 		float4 pos : SV_POSITION;
@@ -32,15 +25,6 @@ Shader "VolSample/Structured Volume Sampling" {
 		float3 normal2 : TEXCOORD4;
 		float3 blendWeights : COLOR;
 	};
-
-	uniform sampler2D _MainTex;
-	uniform sampler2D _CameraDepthTexture;
-
-	#include "Scenes/SceneClouds.cginc"
-	//#include "Scenes/SceneFogCube.cginc"
-
-	#include "RayMarchCore.cginc"
-	#include "Camera.cginc"
 
 	float3 DecodeNormalFromUV(float2 uv)
 	{
@@ -86,7 +70,6 @@ Shader "VolSample/Structured Volume Sampling" {
 	
 	float4 frag( v2fd i, in const int RAYS ) : SV_Target
 	{
-
 		float2 q = i.screenPos.xy / i.screenPos.w;
 		float2 p = 2.0*(q - 0.5);
 

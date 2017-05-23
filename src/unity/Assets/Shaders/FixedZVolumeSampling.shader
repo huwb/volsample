@@ -12,28 +12,12 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 	
 	CGINCLUDE;
 	
-	#include "UnityCG.cginc"
-	
-	// the number of volume samples to take
-	#define SAMPLE_COUNT 32
-
-	// spacing between samples
-	#define SAMPLE_PERIOD 1.
-	
-	// sun direction
-	#define SUN_DIR float3(-0.70710678,0.,-.70710678)
-	
-	// debug bevel areas
-	#define DEBUG_BEVEL 0
-
-	// debug weights
-	#define DEBUG_WEIGHTS 0
-
 	uniform sampler2D _MainTex;
 	uniform sampler2D _CameraDepthTexture;
 
-	#include "Scenes/SceneClouds.cginc"
-	//#include "Scenes/SceneFogCube.cginc"
+	#include "UnityCG.cginc"
+
+	#include "RenderSettings.cginc"
 
 	#include "RayMarchCore.cginc"
 	#include "Camera.cginc"
