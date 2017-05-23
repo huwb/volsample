@@ -14,6 +14,9 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
 
     public Shader[] _volShaders;
 
+    [Tooltip("Optional - shadow rendering camera to read shadows from.")]
+    public Camera _shadowCamera;
+
     float _forwardMotionIntegrated = 0f;
     Vector3 _lastPos;
 
@@ -94,6 +97,15 @@ public class StructuredVolumeSampling : UnityStandardAssets.ImageEffects.PostEff
 
         // for pinned sampling
         _volMaterial.SetFloat( "_ForwardMotionIntegrated", _forwardMotionIntegrated );
+
+        if( _shadowCamera )
+        {
+            _shadowCamera.ResetWorldToCameraMatrix();
+            _shadowCamera.ResetProjectionMatrix();
+            _volMaterial.SetMatrix( "_ShadowCameraViewMatrix", _shadowCamera.worldToCameraMatrix );
+            _volMaterial.SetMatrix( "_ShadowCameraProjMatrix", _shadowCamera.projectionMatrix );
+            _volMaterial.SetTexture( "_ShadowCameraDepths", _shadowCamera.targetTexture );
+        }
 
         if( !_activeVolShader.name.ToLower().Contains( "structured" ) )
         {
