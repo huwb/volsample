@@ -5,7 +5,7 @@
 // An alternative would be Fixed-R sampling (samples placed on concentric spheres emanating from the viewer position).
 // This layout works better for camera rotations but breaks down for sideways and up/down camera motion.
 
-Shader "VolSample/Fixed-Z Volume Sampling" {
+Shader "VolSample/Fixed-Z Sampling" {
 	Properties{
 		_MainTex( "", 2D ) = "white" {}
 	}
@@ -93,25 +93,8 @@ Shader "VolSample/Fixed-Z Volume Sampling" {
 			// For this Fixed-Z sampling, the geometry is irrelevant and the same pass is used for each component. A full screen quad/triangle would
 			// be more officient but it is left like this for simplicity.
 
-			Pass{
-			ZTest Always Cull Off ZWrite Off
-
-			CGPROGRAM
-			#pragma target 3.0   
-			#pragma vertex vert
-			#pragma fragment frag
-			ENDCG
-		}
-			Pass{
-			ZTest Always Cull Off ZWrite Off
-
-			CGPROGRAM
-			#pragma target 3.0   
-			#pragma vertex vert
-			#pragma fragment frag
-			ENDCG
-		}
-			Pass{
+		Pass
+		{
 			ZTest Always Cull Off ZWrite Off
 
 			CGPROGRAM

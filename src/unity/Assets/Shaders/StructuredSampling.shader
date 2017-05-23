@@ -1,6 +1,6 @@
 ﻿// New technique - samples are placed on fixed world-space planes
 
-Shader "VolSample/Structured Volume Sampling" {
+Shader "VolSample/Structured Sampling" {
 	Properties {
 		_MainTex( "", 2D ) = "white" {}
 	}
