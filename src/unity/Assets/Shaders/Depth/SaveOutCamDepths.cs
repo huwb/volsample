@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-//so that we can see changes we make without having to run the game
-
 [ExecuteInEditMode]
 public class SaveOutCamDepths : MonoBehaviour
 {

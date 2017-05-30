@@ -5,7 +5,7 @@
 // An alternative would be Fixed-R sampling (samples placed on concentric spheres emanating from the viewer position).
 // This layout works better for camera rotations but breaks down for sideways and up/down camera motion.
 
-Shader "VolSample/Fixed-Z Sampling" {
+Shader "VolSample/Volume Render" {
 	Properties{
 		_MainTex( "", 2D ) = "white" {}
 	}
@@ -89,7 +89,7 @@ Shader "VolSample/Fixed-Z Sampling" {
 		return o;
 	}
 
-	#else
+	#else // STRUCTURED_SAMPLING
 
 	struct v2f
 	{
@@ -105,7 +105,7 @@ Shader "VolSample/Fixed-Z Sampling" {
 		return o;
 	}
 
-	#endif
+	#endif // STRUCTURED_SAMPLING
 
 	float3 combineColors( in float4 clouds, in float3 ro, in float3 rd )
 	{
@@ -140,7 +140,7 @@ Shader "VolSample/Fixed-Z Sampling" {
 		// structured sampling - samples lie on world space planes
 		float4 clouds = RaymarchStructured( ro, rd, i.normal0, i.normal1, i.normal2, i.blendWeights, depthValue, RAYS );
 
-		#else
+		#else // STRUCTURED_SAMPLING
 
 		// fixed-Z sampling
 		float3 rdFixedZ = rd / dot( rd, _CamForward );
@@ -152,7 +152,7 @@ Shader "VolSample/Fixed-Z Sampling" {
 		float4 clouds = RayMarchFixedZ( ro, rdFixedZ, depthValue );
 		#endif
 
-		#endif
+		#endif // STRUCTURED_SAMPLING
 
 		// add in camera render colours, if not zfar (so we exclude skybox)
 		if( depthValue <= 999. )

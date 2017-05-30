@@ -9,7 +9,6 @@ void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 	{
 		float4 col = VolumeSampleColor( pos );
 
-		// dt = sqrt(dt / 5) * 5; // hack to soften and brighten
 		sum += wt * dt * col * (1.0 - sum.a);
 	}
 }

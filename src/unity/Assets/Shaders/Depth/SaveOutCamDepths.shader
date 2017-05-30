@@ -1,5 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
+﻿
 Shader "Custom/Save Out Camera Depths"
 {
 	SubShader
@@ -33,7 +32,6 @@ Shader "Custom/Save Out Camera Depths"
 			{
 				float depthValue = LinearEyeDepth( tex2Dproj( _CameraDepthTexture, UNITY_PROJ_COORD( i.scrPos ) ).r );
 				return depthValue;
-				//return half4((half3) exp(-depthValue/5.), 1.);
 			}
 			ENDCG
 		}

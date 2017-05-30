@@ -32,7 +32,7 @@ This is implemented as a Unity 5 project (last run on 5.6) and should "just work
 
 Find the current test scenes in the *Scenes/* folder. A few volume sampling schemes are implemented for comparison and can be selected via the on screen GUI.
 
-All volume sampling methods and volumetric scenes are implemented into *VolumeRender.shader*, as shader features. This is a quick and dirty way to associated shader code with unity scenes at the same time as supporting different volume sampling approaches, without requiring a ton of shader code duplications.
+All volume sampling methods and volumetric scenes are implemented into *VolumeRender.shader*, as shader features. This is a quick and dirty way to associate shader code with unity scenes, and at the same time support different volume sampling approaches, without requiring a ton of shader code duplication.
 
 
 ## Algorithm

@@ -25,6 +25,7 @@ float Spotlight( in float3 pos )
 	posShadowP.xy = .5 * posShadowP.xy + .5;
 	float zSurf = -tex2Dlod( _ShadowCameraDepths, float4(posShadowP.xy, 0., 0.) );
 
-	// hacky way to try to soften shadows
-	return smoothstep( SAMPLE_PERIOD*4., -SAMPLE_PERIOD*4., zSurf - posShadowV.z );
+	// hacky way to try to soften shadows. depth is rendered low res, and hard depth test converted to fuzzy/feathered region
+	// in front of surface
+	return smoothstep( 0.0, -SAMPLE_PERIOD * 4.0, zSurf - posShadowV.z );
 }
