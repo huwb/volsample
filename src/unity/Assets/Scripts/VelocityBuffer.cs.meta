@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b642ff60407fe724bafa6602199213c0
+timeCreated: 1438011374
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - velocityShader: {fileID: 4800000, guid: 0d7f09e63dd99504ca6e04212a21ec72, type: 3}
+  - velocityBuffer: {instanceID: 0}
+  - velocityNeighborMax: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
