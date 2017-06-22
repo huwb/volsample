@@ -1,4 +1,5 @@
-﻿
+﻿// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+
 // Standard raymarching - samples are placed on parallel planes that are orthogonal to the view z axis. Samples
 // are stationary in view space (move with the camera).
 

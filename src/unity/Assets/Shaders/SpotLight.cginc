@@ -1,3 +1,5 @@
+// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+
 // approximates a spotlight with shadow. no attenuation of light by volume.
 // it should be possible to use standard unity functionality to do this. it was easier for now to just implement it here.
 

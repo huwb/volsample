@@ -1,3 +1,5 @@
+// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+
 // Shared shader code for pixel view rays, given screen pos and camera frame vectors.
 
 // Camera vectors are passed in as this shader is run from a post proc camera, so the unity built-in values are not useful.

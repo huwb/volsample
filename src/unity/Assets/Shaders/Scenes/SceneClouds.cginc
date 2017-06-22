@@ -1,3 +1,8 @@
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+// Originated from two Shadertoy masterpieces:
+//		Clouds by iq: https://www.shadertoy.com/view/XslGRr
+//		Cloud Ten by nimitz: https://www.shadertoy.com/view/XtS3DD
 
 // the number of volume samples to take
 #define SAMPLE_COUNT 32

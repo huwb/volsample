@@ -1,3 +1,5 @@
+// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+
 // Implementation of some different raymarch approaches
 
 ////////////////////////////////////////////////////////////////////////

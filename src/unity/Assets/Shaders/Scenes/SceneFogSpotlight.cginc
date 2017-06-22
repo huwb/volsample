@@ -1,3 +1,4 @@
+// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
 
 // the number of volume samples to take
 #define SAMPLE_COUNT 32
