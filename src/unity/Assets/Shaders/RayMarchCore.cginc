@@ -42,8 +42,23 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 
 ////////////////////////////////////////////////////////////////////////
 // Raymarching with Jitter
-//This noise funtion comes from https://www.shadertoy.com/view/MslGR8
-float Noise(float2 n,float x){n+=x;return frac(sin(dot(n.xy,float2(12.9898, 78.233)))*43758.5453)*2.0-1.0;}
+/*
+	float noise( in float2 x, in sampler2D noiseTex )
+	{
+	 //   float3 p = floor(x);
+	 //   float3 f = frac(x);
+	 //   f = f*f*(3.0-2.0*f);
+	    
+	    float2 uv2 = x;//(p.xy+float2(37.0,17.0)*p.z) + f.xy;
+	    float2 rg = tex2Dlod( noiseTex, float4( (uv2 + 0.5)/256.0, 0.0, 0.0 ) ).yx;
+	    return rg.x;//lerp( rg.x, rg.y, f.z );
+	}
+	*/
+#define F1 float
+#define F2 float2
+
+
+F1 Noise(F2 n,F1 x){n+=x;return frac(sin(dot(n.xy,F2(12.9898, 78.233)))*43758.5453)*2.0-1.0;}
 
 float4 RayMarchWithJitter( in float3 ro, in float3 rd, in float zbuf, in sampler2D noiseTex )
 {
@@ -61,9 +76,9 @@ float4 RayMarchWithJitter( in float3 ro, in float3 rd, in float zbuf, in sampler
 
 		float jittedT = t + Noise(rd.xy,t);
 
-		//check the jittered distance
-		distToSurf = zbuf - jittedT;		
+		distToSurf = zbuf - jittedT;
 		if( distToSurf <= 0.001 ) break;
+
 
 		RaymarchStep( ro + jittedT * rd, dt, wt, sum );
 
