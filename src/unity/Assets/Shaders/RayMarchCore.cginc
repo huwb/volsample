@@ -41,6 +41,40 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Raymarching with Jitter
+//This noise funtion comes from https://www.shadertoy.com/view/MslGR8
+float Noise(float2 n,float x){n+=x;return frac(sin(dot(n.xy,float2(12.9898, 78.233)))*43758.5453)*2.0-1.0;}
+
+float4 RayMarchWithJitter( in float3 ro, in float3 rd, in float zbuf, in sampler2D noiseTex )
+{
+	float4 sum = (float4)0.;
+
+	// setup sampling
+	float dt = SAMPLE_PERIOD, t = dt;
+
+	for( int i = 0; i < SAMPLE_COUNT; i++ )
+	{
+		float distToSurf = zbuf - t;
+		if( distToSurf <= 0.001 ) break;
+
+		float wt = (distToSurf >= dt) ? 1. : distToSurf / dt;
+
+		float jittedT = t + Noise(rd.xy,t);
+
+		//check the jittered distance
+		distToSurf = zbuf - jittedT;		
+		if( distToSurf <= 0.001 ) break;
+
+		RaymarchStep( ro + jittedT * rd, dt, wt, sum );
+
+		t += dt;
+	}
+
+	return saturate( sum );
+}
+
+
+////////////////////////////////////////////////////////////////////////
 // Standard raymarching but pinned in Z - samples move to compensate forward motion
 
 uniform float _ForwardMotionIntegrated;
