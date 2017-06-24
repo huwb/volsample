@@ -19,35 +19,9 @@ float noise( in float3 x )
 	return lerp( rg.x, rg.y, f.z );
 }
 
-float4 map( in float3 p )
-{
-	float d = .1 + .8 * sin( 0.6*p.z )*sin( 0.5*p.x ) - p.y; // was 0.1
-
-	float3 q = p;
-	float f;
-	f = 0.5000*noise( q ); q = q*2.02;
-	f += 0.2500*noise( q ); q = q*2.03;
-	f += 0.1250*noise( q ); q = q*2.01;
-	f += 0.0625*noise( q );
-	d += 2.75 * f;
-
-	d = clamp( d, 0.0, 1.0 );
-
-	float4 res = (float4)d;
-
-	float3 col = 1.15 * float3(1.0, 0.95, 0.8);
-	col += float3(1., 0., 0.) * exp2( res.x*10. - 10. );
-	res.xyz = lerp( col, float3(0.7, 0.7, 0.7), res.x );
-
-	return res;
-}
-
 float4 VolumeSampleColor( in float3 pos )
 {
-	float dens = 1.;
-
-	dens *= noise( pos - float3(.1,.5,.1)* _Time.w );
-	dens *= 2.5;
+	float dens = 2.5 * noise( pos - float3(.1,.5,.1)* _Time.w );
 
 	float light = Spotlight( pos );
 

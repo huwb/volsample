@@ -27,5 +27,8 @@ float Spotlight( in float3 pos )
 
 	// hacky way to try to soften shadows. depth is rendered low res, and hard depth test converted to fuzzy/feathered region
 	// in front of surface
-	return smoothstep( 0.0, -SAMPLE_PERIOD * 4.0, zSurf - posShadowV.z );
+	//return smoothstep( 0.0, -SAMPLE_PERIOD * 4.0, zSurf - posShadowV.z );
+
+	// hb disabled for now while experimenting with TAA
+	return zSurf < posShadowV.z;
 }

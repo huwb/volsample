@@ -43,27 +43,18 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 //This noise funtion comes from https://www.shadertoy.com/view/MslGR8
 float Noise(float2 n,float x){n+=x;return frac(sin(dot(n.xy,float2(12.9898, 78.233)))*43758.5453)*2.0-1.0;}
 
-float4 RayMarchWithJitter( in float3 ro, in float3 rd, in float zbuf, in sampler2D noiseTex )
+float4 RayMarchWithJitter( in float3 ro, in float3 rd, in float zbuf, in sampler2D noiseTex, in float2 screenPos )
 {
 	float4 sum = (float4)0.;
 
-	// setup sampling
-	float dt = SAMPLE_PERIOD, t = dt;
+	// setup sampling - jitter raymarch start offset
+	int SAMP_COUNT = 9;
+	float dt = zbuf / (float(SAMP_COUNT) + 1.);
+	float t = dt * Noise( _ScreenParams.xy*screenPos, _Time.w );
 
-	for( int i = 0; i < SAMPLE_COUNT; i++ )
+	for( int i = 0; i < SAMP_COUNT; i++ )
 	{
-		float distToSurf = zbuf - t;
-		if( distToSurf <= 0.001 ) break;
-
-		float wt = (distToSurf >= dt) ? 1. : distToSurf / dt;
-
-		float jittedT = t + Noise(rd.xy,t);
-
-		//check the jittered distance
-		distToSurf = zbuf - jittedT;		
-		if( distToSurf <= 0.001 ) break;
-
-		RaymarchStep( ro + jittedT * rd, dt, wt, sum );
+		RaymarchStep( ro + t * rd, dt, 1., sum );
 
 		t += dt;
 	}

@@ -98,7 +98,7 @@ Shader "VolSample/Naive Volume Render" {
 
 	#if TAA
 		// samples move with camera
-		float4 clouds = RayMarchWithJitter( ro, rdFixedZ, depthValue, _NoiseTex);
+		float4 clouds = RayMarchWithJitter( ro, rdFixedZ, depthValue, _NoiseTex, i.screenPos.xy );
 	#else
 		float4 clouds = RayMarchFixedZ( ro, rdFixedZ, depthValue );
 	#endif
