@@ -11,6 +11,11 @@ void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 	{
 		float4 col = VolumeSampleColor( pos );
 
+		#if Z_PLANES_ONLY
+		// very large dts bad, limit these
+		dt = min( dt, 2.*SAMPLE_PERIOD );
+		#endif
+
 		sum += wt * dt * col * (1.0 - sum.a);
 	}
 }

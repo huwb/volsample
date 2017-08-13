@@ -38,6 +38,9 @@ Shader "VolSample/Volume Render" {
 	// structured sampling - debug weights
 	#define DEBUG_WEIGHTS 0
 
+	// strutured sampling - only intersection samples with planes orthogonal to z axis
+	#define Z_PLANES_ONLY 0
+
 	// scene
 	#if SCENE_CLOUDS
 	#include "Scenes/SceneClouds.cginc"
@@ -86,6 +89,12 @@ Shader "VolSample/Volume Render" {
 
 		// pass on the blend weights from the color channel
 		o.blendWeights = v.color.rgb;
+
+		#if Z_PLANES_ONLY
+		// debug mode - only intersection with a single plane orientation - orthogonal to z axis
+		o.normal0 = o.normal1 = o.normal2 = float3(0., 0., 1.);
+		o.blendWeights = float3(1., 0., 0.);
+		#endif
 
 		return o;
 	}
