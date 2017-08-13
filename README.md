@@ -6,6 +6,8 @@ MIT-licensed volume rendering research framework.
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)  
 Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/volrender_800x450_30fps.mp4).
 
+Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).
+
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
@@ -20,10 +22,7 @@ Volume rendering in real-time applications is expensive, and sample counts are t
 
 This repos started as the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015 [1]. The full presentation PPT is available for download from the course page [here][ADVANCES2015]. While this is useful reading, the latest implementation takes a new approach which completely replaces most of the approaches introduced in the talk.
 
-The latest approach, Structured Sampling, works by placing samples on a set of world-space planes, constraining their motion and eliminating noticeable aliasing. A "flatland" version of this approach is implemented  on Shadertoy:
-
-Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
+The latest approach, Structured Sampling, works differently. See the Algorithm section below.
 
 
 ## Running
@@ -37,16 +36,9 @@ All volume sampling methods and volumetric scenes are implemented into *VolumeRe
 
 ## Algorithm
 
-The latest approach, Structured Sampling, works by placing samples on a set of world-space planes, constraining their motion and eliminating noticeable aliasing. A "flatland" version of this approach is implemented  on Shadertoy:
+Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).
 
-Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
-Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
-
-In the Shadertoys the planes are shown as lines (rendered from top down). For the non-flatland full 3D case we need planes that cover the full hemisphere of possible ray directions around the viewer. We choose planes parallel to the faces of a dodecahedron which has a nice distribution of faces. Too few planes would make perspective distortion visible - the planar shape becomes visible. Too many planes would lead to more data and larger blend regions between planes (more info below).
-
-We generate a dodecahedron at run time around the camera, and rasterize it to seed the volume render. Each ray places its samples on the intersection of the ray and the set of equidistributed world space planes that are parallel to the dodecahedron face. We bevel the dodecahedron slightly, and the bevelled regions are where blending is required to blend from one plane to another. The corners of the dodecahedron are the intersections of 3 planes and require three rays to be blended. This is 3 times the rendering expense (although we march the rays in parallel and the cost is hopefully amortised by coherent texture samples). We use small bevels to minimize these expensive cases, in our tests less than 14% of pixels required raymarching against 2 planes, and less than 1% required raymarching against all 3.
-
-For understanding it may help to enable the define *DEBUG_BEVEL* and play with the Bevel amount on the Platonic Solid Blend script. Doing a GPU trace capture in unity can also be helpful to see the dodecahedron.
+For further understanding it may help to enable the define *DEBUG_BEVEL* and play with the Bevel amount on the Platonic Solid Blend script. Doing a GPU trace capture in unity can also be helpful to see the dodecahedron.
 
 We hope to publish a full description of this technique soon. Stay tuned!
 
