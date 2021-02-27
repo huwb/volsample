@@ -43,7 +43,7 @@ All volume sampling methods and volumetric scenes are implemented into *VolumeRe
 
 ## Algorithm
 
-![Overview](https://raw.githubusercontent.com/huwb/volsample/master/img/overview.jpg)  
+![Overview](https://raw.githubusercontent.com/huwb/volsample/master/img/overview.png)  
 
 **Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).**
 
