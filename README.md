@@ -6,7 +6,7 @@ MIT-licensed volume rendering research framework.
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)  
 Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/volrender_800x450_30fps.mp4).
 
-Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).
+**Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).**
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
