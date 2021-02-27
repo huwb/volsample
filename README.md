@@ -56,6 +56,7 @@ We hope to publish a full description of this technique soon. Stay tuned!
 ## Bugs and improvement directions
 
 * The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and could be reinstated.
+* If enough of the code that samples the volume / does the lighting is scalar (calculations on floats/ints rather than vectors), it may make sense to vectorize the loop to calculate 4 samples simultaneously.
 
 <br/>
 
