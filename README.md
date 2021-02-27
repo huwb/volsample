@@ -43,7 +43,9 @@ All volume sampling methods and volumetric scenes are implemented into *VolumeRe
 
 ## Algorithm
 
-Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).
+![Overview](https://raw.githubusercontent.com/huwb/volsample/master/img/overview.jpg)  
+
+**Draft slides describing latest approach [here](https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx).**
 
 For further understanding it may help to enable the define *DEBUG_BEVEL* and play with the Bevel amount on the Platonic Solid Blend script. Doing a GPU trace capture in unity can also be helpful to see the dodecahedron.
 
