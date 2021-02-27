@@ -24,7 +24,7 @@ Volume rendering in real-time applications is expensive, and sample counts are t
 
 This repos started as the source code for the course titled *A Novel Sampling Algorithm for Fast and Stable Real-Time Volume Rendering*, in the *Advances in Real-Time Rendering in Games* course at SIGGRAPH 2015 [1]. The full presentation PPT is available for download from the course page [here][ADVANCES2015]. While this is useful reading, the latest implementation takes a new approach which completely replaces most of the approaches introduced in the talk.
 
-The latest approach, Structured Sampling, works differently. See the Algorithm section below.
+The latest approach, *Structured Volume Sampling*, works differently. See the Algorithm section below.
 
 
 ## Running
