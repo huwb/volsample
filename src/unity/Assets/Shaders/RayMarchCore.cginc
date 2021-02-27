@@ -148,14 +148,13 @@ float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n
 		// to compute the correct sample count based on zbuf outside this loop..
 		bool stillSampling = false;
 
-		// RAYS is statically defined per pass and the compiler should take care of this branch,
-		// but worth verifying in practice
-
 		// it may be possible to vectorize the below - break out the 1-sample / 2-sample / 3-sample
 		// variants into separate functions and compute multiple samples in parallel. it depends
 		// how well the volume sampling vectorizes for particular applications, and it would complicate
 		// the code significantly so its left as is
 
+		// RAYS is statically defined per pass and the compiler should take care of this branch,
+		// but worth verifying in practice
 		if( RAYS > 0 )
 		{
 			float dts0 = zbuf[0] - t[0];
