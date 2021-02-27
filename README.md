@@ -11,7 +11,7 @@ Draft slides describing latest approach [here](https://raw.githubusercontent.com
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
-Impressive use case by Felix Westin: https://twitter.com/FewesW , in particular https://twitter.com/FewesW/status/1364935000790102019
+Impressive application of this technique by Felix Westin: https://twitter.com/FewesW , in particular https://twitter.com/FewesW/status/1364935000790102019
 
 Alternative implementation: https://github.com/gokselgoktas/structured-volume-sampling
 
@@ -19,6 +19,7 @@ Contacts: Huw Bowles (@hdb1 , huw dot bowles at gmail dot com), Daniel Zimmerman
 
 Retweet to support this work: https://twitter.com/hdb1/status/769615284672028672  
 
+<br/>
 
 ## Introduction
 
@@ -28,6 +29,7 @@ This repos started as the source code for the course titled *A Novel Sampling Al
 
 The latest approach, *Structured Volume Sampling*, works differently. See the Algorithm section below.
 
+<br/>
 
 ## Running
 
@@ -37,6 +39,7 @@ Find the current test scenes in the *Scenes/* folder. A few volume sampling sche
 
 All volume sampling methods and volumetric scenes are implemented into *VolumeRender.shader*, as shader features. This is a quick and dirty way to associate shader code with unity scenes, and at the same time support different volume sampling approaches, without requiring a ton of shader code duplication.
 
+<br/>
 
 ## Algorithm
 
@@ -46,11 +49,13 @@ For further understanding it may help to enable the define *DEBUG_BEVEL* and pla
 
 We hope to publish a full description of this technique soon. Stay tuned!
 
+<br/>
 
 ## Bugs and improvement directions
 
 * The adaptive sampling method published [here][ADVANCES2015] should be compatible with the new approach and could be reinstated.
 
+<br/>
 
 ## References
 
