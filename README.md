@@ -1,5 +1,5 @@
 
-# volsample
+# Structured Volume Sampling
 
 MIT-licensed volume rendering research framework.
 
@@ -10,6 +10,8 @@ Draft slides describing latest approach [here](https://raw.githubusercontent.com
 
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
+
+Alternative implementation: https://github.com/gokselgoktas/structured-volume-sampling
 
 Contacts: Huw Bowles (@hdb1 , huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (bebei dot wang at gmail dot com)
 
