@@ -5,6 +5,16 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Constructs a beveled dodecahedron with normals and blend weights written into verts.
+/// This dodec is rasterised centered on the camera, and there is vertex data that gives
+/// the volume renderer the information it needs to do the sampling. The major pentagon
+/// faces of the dodec require one raymarch through the volume and the verts store the
+/// face normal and weight 1. Bevelled edges form rectangles where the orientations of both
+/// neighbouring pentagons are used in 2 raymarches - the normals of both pentagons are stored
+/// along with two weights that should be used to interpolate the final results. The final
+/// case is bevelled corners that form small triangles, there three weights and normals are
+/// computed.
+///
+/// See https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx for illustrations.
 /// </summary>
 [ExecuteInEditMode]
 public class PlatonicSolidBlend : MonoBehaviour

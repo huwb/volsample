@@ -3,7 +3,8 @@
 // Implementation of some different raymarch approaches
 
 ////////////////////////////////////////////////////////////////////////
-// Shared - code for each raymarch step
+// Shared - code for each raymarch step. This samples the volume and integrates
+// the result.
 
 void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 {
@@ -21,7 +22,8 @@ void RaymarchStep( in float3 pos, in float dt, in float wt, inout float4 sum )
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Standard raymarching
+// Standard raymarching - all samples for the screen taken in 'sheets' of
+// samples at a set of fixed steps away from the viewer.
 
 float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 {
@@ -32,6 +34,7 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 
 	for( int i = 0; i < SAMPLE_COUNT; i++ )
 	{
+		// fade out last sample if it is close to background scene
 		float distToSurf = zbuf - t;
 		if( distToSurf <= 0.001 ) break;
 
@@ -46,8 +49,15 @@ float4 RayMarchFixedZ( in float3 ro, in float3 rd, in float zbuf )
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Standard raymarching but pinned in Z - samples move to compensate forward motion
+// Standard raymarching but 'pinned' in view-Z - samples shift forward/backwards
+// to compensate forward motion. So if the viewer moves forward, the samples
+// are shifted backwards to keep them close to stationary. This helps a lot
+// to get a stable render even with camera translating quickly. This breaks
+// down however for rotational motion where samples at the sides of the screen
+// are swept through the volume with the frustum.
 
+// Integrated forward motion of camera, computed outside this shader by projecting
+// change of camera pos each frame onto the camera forward vector.
 uniform float _ForwardMotionIntegrated;
 
 float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
@@ -64,6 +74,7 @@ float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
 
 	for( int i = 0; i < SAMPLE_COUNT; i++ )
 	{
+		// fade out last sample if it is close to background scene
 		float distToSurf = zbuf - t;
 		if( distToSurf <= 0.001 ) break;
 
@@ -79,8 +90,16 @@ float4 RayMarchFixedZPinned( in float3 ro, in float3 rd, in float zbuf )
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Structured volume sampling
+// Structured volume sampling. Bevelled dodec drawn around viewpoint to kick off RM.
+// The dodec verts carry information needed to kick off up to 3 raymarches per pixel
+// and blend the result. This information is comprised of normals to sets of world
+// space planes to place samples on (n0, n1, n2) and weights to use to blend the result
+// of each raymarch (wt.xyz).
 
+// See https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx for illustrations.
+
+// Sets up raymarch start offset (t_0) and step size (dt) for a particular set of canonical
+// planes (parallel to pentagons on the dodec).
 void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, out float dt )
 {
 	float ndotrd = dot( rd, n );
@@ -97,6 +116,9 @@ void IntersectPlanes( in float3 n, in float3 ro, in float3 rd, out float t_0, ou
 	if( t_0 < 0. ) t_0 += dt;
 }
 
+// Performs the statically-defined RAYS raymarches, where raymarch number i takes volume
+// samples at the intersection of the view ray and world space planes with normal n_i, to yield
+// a rendered result sum_i. Final result is sum of wt[i]*sum_i.
 float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n1, in float3 n2, in float3 wt, in float depth, in const int RAYS )
 {
 	float4 sum0, sum1, sum2;
@@ -122,7 +144,17 @@ float4 RaymarchStructured( in float3 ro, in float3 rd, in float3 n0, in float3 n
 	// take interior samples for each plane
 	for( int i = 1; i < SAMPLE_COUNT; i++ )
 	{
+		// used to detect if all samples hit background surfaces. probably this should be changed
+		// to compute the correct sample count based on zbuf outside this loop..
 		bool stillSampling = false;
+
+		// RAYS is statically defined per pass and the compiler should take care of this branch,
+		// but worth verifying in practice
+
+		// it may be possible to vectorize the below - break out the 1-sample / 2-sample / 3-sample
+		// variants into separate functions and compute multiple samples in parallel. it depends
+		// how well the volume sampling vectorizes for particular applications, and it would complicate
+		// the code significantly so its left as is
 
 		if( RAYS > 0 )
 		{

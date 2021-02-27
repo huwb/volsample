@@ -3,7 +3,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Drives the volume render.
+/// Drives the volume render. It rasterizes the dodec geometry in three passes, firstly the pentagon
+/// faces with a pass that does one raymarch, then the rectangle bevelled edges with a pass that
+/// does two raymarches and blends the result, then the triangle bevelled corners that does 3 raymarches.
+/// It does this in OnRenderImage.
 /// </summary>
 [ExecuteInEditMode]
 [RequireComponent( typeof( Camera ), typeof( PlatonicSolidBlend ) )]

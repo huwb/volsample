@@ -1,13 +1,19 @@
 ﻿// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
 
 // Standard raymarching - samples are placed on parallel planes that are orthogonal to the view z axis. Samples
-// are stationary in view space (move with the camera).
+// are stationary in view space (move with the camera). This exhibits heavy aliasing when the camera moves as
+// the samples sweep through the voluem. An alternative would be Fixed-R sampling (samples placed on concentric
+// spheres emanating from the viewer position). This layout works better for camera rotations but breaks down
+// for sideways and up/down camera motion.
 
-// An alternative would be Fixed-R sampling (samples placed on concentric spheres emanating from the viewer position).
-// This layout works better for camera rotations but breaks down for sideways and up/down camera motion.
+// Structured volume sampling places samples on world aligned planes that are parallel to pentagons of a
+// dodecahedron. Illustrations: https://raw.githubusercontent.com/huwb/volsample/master/doc/volsample.pptx.
+// With this setup the only motion of samples is parallel to the sampling planes, which are densely sampled
+// an aliasing is not an issue.
 
-Shader "VolSample/Volume Render" {
-	Properties{
+Shader "VolSample/Volume Render"
+{
+	Properties {
 		_MainTex( "", 2D ) = "white" {}
 	}
 	
@@ -65,6 +71,7 @@ Shader "VolSample/Volume Render" {
 		float3 blendWeights : COLOR;
 	};
 
+	// mesh uvs are vector2s so we unpack 3d normal 2 components
 	float3 DecodeNormalFromUV( float2 uv )
 	{
 		float2 fEnc = uv * 4.0 - 2.0;
@@ -73,11 +80,13 @@ Shader "VolSample/Volume Render" {
 		return float3(fEnc * g, 1 - f / 2.0);
 	}
 
+	// vertex shader executed for the verts of the bevelled dodec. passes sampling plane normals
+	// and weights to fragment shader.
 	v2f vert( appdata_full v )
 	{
 		v2f o;
 
-		// place the mesh camera-centered.
+		// place the mesh camera-centered, and scale up to be clear of near plane
 		o.pos = mul( UNITY_MATRIX_VP, float4(100.0 * v.vertex.xyz + _WorldSpaceCameraPos, v.vertex.w) );
 
 		o.screenPos = ComputeScreenPos( o.pos );
@@ -188,7 +197,7 @@ Shader "VolSample/Volume Render" {
 
 	Subshader
 	{
-		// Pass 0: One blend weight
+		// Pass 0: One blend weight. Executed on bevelled dodecahedron pentagons.
 		Pass
 		{
 			ZTest Always Cull Off ZWrite Off
@@ -200,7 +209,7 @@ Shader "VolSample/Volume Render" {
 			ENDCG
 		}
 
-		// Pass 1: Two blend weights
+		// Pass 1: Two blend weights. Executed on bevelled dodecahedron rectangles.
 		Pass
 		{
 			ZTest Always Cull Off ZWrite Off
@@ -212,7 +221,7 @@ Shader "VolSample/Volume Render" {
 			ENDCG
 		}
 
-		// Pass 2: Three blend weights
+		// Pass 2: Three blend weights. Executed on bevelled dodecahedron triangles (corners).
 		Pass
 		{
 			ZTest Always Cull Off ZWrite Off
