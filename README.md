@@ -1,7 +1,7 @@
 
 # Structured Volume Sampling
 
-MIT-licensed volume rendering research framework.
+MIT-licensed implementation of Structured Volume Sampling technique, along with simple framework for comparing other techniques.
 
 ![Teaser](https://raw.githubusercontent.com/huwb/volsample/master/img/teaser.jpg)  
 Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/volrender_800x450_30fps.mp4).
