@@ -20,7 +20,9 @@ Retweet to support this work: https://twitter.com/hdb1/status/769615284672028672
 # News
 
 Impressive application of this technique by Felix Westin: https://twitter.com/FewesW , in particular https://twitter.com/FewesW/status/1364935000790102019
+
 Analysis and thread by Mirko Salm: https://twitter.com/Mirko_Salm/status/1372365191481032705
+
 Alternative implementation: https://github.com/gokselgoktas/structured-volume-sampling
 
 
