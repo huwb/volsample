@@ -11,15 +11,18 @@ Teaser video [here](https://raw.githubusercontent.com/huwb/volsample/master/img/
 Shadertoy volume rendering demo: [Mt3GWs](https://www.shadertoy.com/view/Mt3GWs)  
 Shadertoy sampling diagram: [ll3GWs](https://www.shadertoy.com/view/ll3GWs)
 
-Impressive application of this technique by Felix Westin: https://twitter.com/FewesW , in particular https://twitter.com/FewesW/status/1364935000790102019
-
-Alternative implementation: https://github.com/gokselgoktas/structured-volume-sampling
-
 Contacts: Huw Bowles (@hdb1 , huw dot bowles at gmail dot com), Daniel Zimmermann (daniel dot zimmermann at studiogobo dot com), Beibei Wang (bebei dot wang at gmail dot com)
 
 Retweet to support this work: https://twitter.com/hdb1/status/769615284672028672  
 
 <br/>
+
+# News
+
+Impressive application of this technique by Felix Westin: https://twitter.com/FewesW , in particular https://twitter.com/FewesW/status/1364935000790102019
+Analysis and thread by Mirko Salm: https://twitter.com/Mirko_Salm/status/1372365191481032705
+Alternative implementation: https://github.com/gokselgoktas/structured-volume-sampling
+
 
 ## Introduction
 
